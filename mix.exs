@@ -33,6 +33,10 @@ defmodule Od.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:arc, "~> 0.11.0"},
+      {:arc_ecto, "~> 0.11.0"},
+      {:argon2_elixir, "~> 2.0"},
+      {:bodyguard, "~> 2.2"},
       {:phoenix, "~> 1.5.1"},
       {:phoenix_ecto, "~> 4.1"},
       {:ecto_sql, "~> 3.4"},

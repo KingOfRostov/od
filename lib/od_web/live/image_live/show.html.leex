@@ -1,0 +1,46 @@
+<h1>Show Image</h1>
+
+  <div>
+    <h2>Uuid: <%= @image.uuid %></h2>
+  </div>
+
+  <div>
+    <h2>Image: <%= @image.image[:file_name] %></h2>
+    <div>
+      <img src="<%= Od.Image.url({@image.image, @image}) %>"/>
+    </div>
+  </div>
+
+
+  <div class="my-5">
+    <h2>Hough image: <%= @image.hough_image[:file_name] %></h2>
+    <div>
+      <img src="<%= Od.Image.url({@image.hough_image, @image}) %>"/>
+    </div>
+    <button type="button" class="btn btn-primary mt-3 ml-5" phx-click="run_hough" phx-disable-with="running...">
+      Run hough again
+    </button>
+  </div>
+
+  <div class="my-5">
+    <h2>Haar image: <%= @image.haar_image[:file_name] %></h2>
+    <div>
+      <img src="<%= Od.Image.url({@image.haar_image, @image}) %>"/>
+    </div>
+    <button type="button" class="btn btn-primary mt-3 ml-5" phx-click="run_haar" phx-disable-with="running...">
+      Run haar again
+    </button>
+  </div>
+
+  <div class="my-5">
+    <h2>Tensorflow image: <%= @image.tensorflow_image[:file_name] %></h2>
+    <div>
+      <img src="<%= Od.Image.url({@image.tensorflow_image, @image}) %>"/>
+    </div>
+    <button type="button" class="btn btn-primary mt-3 ml-5" phx-click="run_tensorflow" phx-disable-with="running...">
+      Run tensorflow again
+    </button>
+  </div>
+
+
+<span><%= live_redirect "Back", to: Routes.image_index_path(@socket, :index) %></span>

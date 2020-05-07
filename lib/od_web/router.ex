@@ -18,6 +18,13 @@ defmodule OdWeb.Router do
     pipe_through :browser
 
     live "/", PageLive, :index
+    live "/images", ImageLive.Index, :index
+    post "/images/new", Gallery.ImageController, :create
+    live "/images/new", ImageLive.Index, :new
+    live "/images/:id/edit", ImageLive.Index, :edit
+
+    live "/images/:id", ImageLive.Show, :show
+    live "/images/:id/show/edit", ImageLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.

@@ -1,0 +1,13 @@
+<h2><%= @title %></h2>
+
+<%= f = form_for :image, "#",
+  multipart: true,
+  id: "image-form",
+  phx_target: @myself %>
+
+  <%= label f, :image %>
+  <%= file_input f, :image %>
+  <%= error_tag f, :image %>
+
+  <%= submit "Save", phx_disable_with: "Saving..." %>
+</form>
