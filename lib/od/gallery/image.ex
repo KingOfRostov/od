@@ -4,10 +4,11 @@ defmodule Od.Gallery.Image do
   import Ecto.Changeset
   alias Od.Gallery
   alias Od.Gallery.Python
-
+  alias Od.Helpers.ImageToBinaryConverter
   @required ~w(image)a
   @optional ~w(uuid)a
-  @attachments ~w(image haar_image hough_image tensorflow_image)a
+  @attachments_atoms ~w(image haar_image hough_image tensorflow_image)a
+  @attachments_strings ~w(image haar_image hough_image tensorflow_image)
   schema "images" do
     field :haar_image, Od.Image.Type
     field :hough_image, Od.Image.Type
@@ -20,26 +21,37 @@ defmodule Od.Gallery.Image do
   @doc false
   def changeset(image, attrs) do
     # TODO костыль, пока нет логина и сессии
+    attrs = ImageToBinaryConverter.with_files(attrs, @attachments_strings)
 
     image
     |> Map.update(:uuid, Ecto.UUID.generate(), fn val -> val || Ecto.UUID.generate() end)
     |> cast(attrs, @required ++ @optional)
-    |> cast_attachments(attrs, @attachments)
+    |> cast_attachments(attrs, @attachments_atoms)
     |> validate_required(@required)
   end
 
   def run_all_algorithms(image) do
     %{filename: filename, cwd: cwd} = get_filename_and_cwd(image)
 
-    Task.start(fn -> run_hough(image, cwd, filename) end)
+    Task.start(fn ->
+      run_hough(image, cwd, filename, %{
+        canny_lower: 150,
+        canny_upper: 150,
+        hough_line_length: 15,
+        hough_line_treshold: 20,
+        blur_strength: 9,
+        hough_line_gap: 5
+      })
+    end)
+
     Task.start(fn -> run_haar(image, cwd, filename) end)
     Task.start(fn -> run_tensorflow(image, cwd, filename) end)
   end
 
-  def run_hough_algorithm(image) do
+  def run_hough_algorithm(image, param) do
     %{filename: filename, cwd: cwd} = get_filename_and_cwd(image)
 
-    run_hough(image, cwd, filename)
+    run_hough(image, cwd, filename, param)
   end
 
   def run_haar_algorithm(image) do
@@ -83,10 +95,10 @@ defmodule Od.Gallery.Image do
     |> delete_python_image(haar_image_path)
   end
 
-  def run_hough(_image, _cwd, nil), do: nil
+  def run_hough(_image, _cwd, nil, _), do: nil
 
-  def run_hough(image, cwd, filename) do
-    hough_image_path = Python.run_hough(cwd <> filename)
+  def run_hough(image, cwd, filename, param) do
+    hough_image_path = Python.run_hough(cwd <> filename, param)
     filename = hough_image_path |> String.split("/") |> List.last()
 
     image

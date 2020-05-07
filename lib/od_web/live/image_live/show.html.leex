@@ -12,32 +12,56 @@
   </div>
 
 
-  <div class="my-5">
+  <div>
     <h2>Hough image: <%= @image.hough_image[:file_name] %></h2>
     <div>
       <img src="<%= Od.Image.url({@image.hough_image, @image}) %>"/>
     </div>
-    <button type="button" class="btn btn-primary mt-3 ml-5" phx-click="run_hough" phx-disable-with="running...">
+    <button type="button" phx-click="run_hough" phx-disable-with="running...">
       Run hough again
     </button>
+    <h3> Actual blur strength is: <%= @blur_strength %> </h3>
+    <button phx-click="dec_blur_strength"> - </button>
+    <button phx-click="inc_blur_strength"> + </button>
+
+    <h3> Actual canny lower is: <%= @canny_lower %> </h3>
+    <button phx-click="dec_canny_lower"> - </button>
+    <button phx-click="inc_canny_lower"> + </button>
+
+    <h3> Actual canny upper is: <%= @canny_upper %> </h3>
+    <button phx-click="dec_canny_upper"> - </button>
+    <button phx-click="inc_canny_upper"> + </button>
+
+    <h3> Actual hough line length is: <%= @hough_line_length %> </h3>
+    <button phx-click="dec_hough_line_length"> - </button>
+    <button phx-click="inc_hough_line_length"> + </button>
+
+    <h3> Actual hough line treshold is: <%= @hough_line_treshold %> </h3>
+    <button phx-click="dec_hough_line_treshold"> - </button>
+    <button phx-click="inc_hough_line_treshold"> + </button>
+
+    <h3> Actual hough line gap is: <%= @hough_line_gap %> </h3>
+    <button phx-click="dec_hough_line_gap"> - </button>
+    <button phx-click="inc_hough_line_gap"> + </button>
   </div>
 
-  <div class="my-5">
+
+  <div>
     <h2>Haar image: <%= @image.haar_image[:file_name] %></h2>
     <div>
       <img src="<%= Od.Image.url({@image.haar_image, @image}) %>"/>
     </div>
-    <button type="button" class="btn btn-primary mt-3 ml-5" phx-click="run_haar" phx-disable-with="running...">
+    <button type="button" phx-click="run_haar" phx-disable-with="running...">
       Run haar again
     </button>
   </div>
 
-  <div class="my-5">
+  <div>
     <h2>Tensorflow image: <%= @image.tensorflow_image[:file_name] %></h2>
     <div>
       <img src="<%= Od.Image.url({@image.tensorflow_image, @image}) %>"/>
     </div>
-    <button type="button" class="btn btn-primary mt-3 ml-5" phx-click="run_tensorflow" phx-disable-with="running...">
+    <button type="button" phx-click="run_tensorflow" phx-disable-with="running...">
       Run tensorflow again
     </button>
   </div>

@@ -114,8 +114,8 @@ defmodule Od.Gallery do
     Image.changeset(image, attrs)
   end
 
-  def run_hough_algorithm(image) do
-    Image.run_hough_algorithm(image)
+  def run_hough_algorithm(image, param) do
+    Image.run_hough_algorithm(image, param)
   end
 
   def run_haar_algorithm(image) do

@@ -1,5 +1,12 @@
 defmodule Od.Gallery.Python do
-  def run_hough(image_path) do
+  def run_hough(image_path, %{
+        canny_lower: canny_lower,
+        canny_upper: canny_upper,
+        blur_strength: blur_strength,
+        hough_line_length: hough_line_length,
+        hough_line_treshold: hough_line_treshold,
+        hough_line_gap: hough_line_gap
+      }) do
     new_image_path =
       cond do
         String.ends_with?(image_path, ".jpg") ->
@@ -12,7 +19,14 @@ defmodule Od.Gallery.Python do
           Regex.replace(~r(\.jpeg$), image_path, "_hough.jpeg")
       end
 
-    command = ~s(python3 object_detection_algorithms.py #{new_image_path} #{image_path} hough)
+    command =
+      ~s(python3 object_detection_algorithms.py --hough_line_gap #{hough_line_gap} --hough_line_treshold #{
+        hough_line_treshold
+      } --hough_line_length #{hough_line_length} --canny_upper #{canny_upper} --canny_lower #{
+        canny_lower
+      } --blur_strength #{blur_strength} --new_image_path '#{new_image_path}' --image_path '#{
+        image_path
+      }' --method 'hough')
 
     command |> String.to_charlist() |> :os.cmd() |> to_string() |> String.trim()
   end
@@ -30,7 +44,11 @@ defmodule Od.Gallery.Python do
           Regex.replace(~r(\.jpeg$), image_path, "_haar.jpeg")
       end
 
-    command = ~s(python3 object_detection_algorithms.py cars #{new_image_path} #{image_path} haar)
+    # TODO change cars
+    command =
+      ~s(python3 object_detection_algorithms.py --cascade cars --new_image_path '#{new_image_path}' --image_path '#{
+        image_path
+      }' --method 'haar')
 
     command |> String.to_charlist() |> :os.cmd() |> to_string() |> String.trim()
   end
@@ -49,7 +67,9 @@ defmodule Od.Gallery.Python do
       end
 
     command =
-      ~s(python3 object_detection_algorithms.py #{new_image_path} #{image_path} tensorflow)
+      ~s(python3 object_detection_algorithms.py --new_image_path '#{new_image_path}' --image_path '#{
+        image_path
+      }' --method 'tensorflow')
 
     command
     |> String.to_charlist()

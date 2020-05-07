@@ -5,6 +5,7 @@
 from pathlib import Path
 import cv2
 import numpy as np
+import argparse
 import sys
 from skimage.io import imread, imsave
 from skimage import data
@@ -60,11 +61,17 @@ def save_image(image, image_path, method):
 
 
 @timeit
-def find_objects_by_edges(image_path, new_image_path, mode = "lines"):
+def find_objects_by_edges(image_path, new_image_path, params, mode = "lines"):
+    blur_strength = params["blur_strength"]
+    canny_lower = params["canny_lower"]
+    canny_upper = params["canny_upper"]
+    hough_line_length = params["hough_line_length"]
+    hough_line_treshold =  params["hough_line_treshold"]
+    hough_line_gap =  params["hough_line_gap"]
     img = imread(image_path)
-    blur = cv2.medianBlur(img,9)
-    edges = cv2.Canny(blur, 150, 150, apertureSize=3)
-    lines = probabilistic_hough_line(edges, threshold=20, line_length=15, line_gap=5)
+    blur = cv2.medianBlur(img,blur_strength)
+    edges = cv2.Canny(blur, canny_lower, canny_upper, apertureSize=3)
+    lines = probabilistic_hough_line(edges, threshold=hough_line_treshold, line_length=hough_line_length, line_gap=hough_line_gap)
     if mode == "circles":
         circles = cv2.HoughCircles(edges,cv2.HOUGH_GRADIENT,1,50, param1=1525,param2=20,minRadius=10,maxRadius=50)
         if circles is not None:
@@ -144,13 +151,11 @@ def find_objects_tensorflow(image_path, new_image_path):
 
 
 def show_inference(model, image_path, new_image_path):
-  print(image_path)
   image = imread(image_path)
   # the array based representation of the image will be used later in order to prepare the
   # result image with boxes and labels on it.
   # List of the strings that is used to add correct label for each box.
   path, dirs, files = next(os.walk('/home/sergey/models/research/object_detection/data/'))
-  print(path)
   PATH_TO_LABELS = path + 'mscoco_label_map.pbtxt'
   category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
   image_np = np.array(image)
@@ -222,21 +227,45 @@ def run_all_algorithms(path_to_dir):
 
 
 # In[14]:
-method = str(sys.argv[-1])
+parser=argparse.ArgumentParser()
+parser.add_argument('--blur_strength',  type=int, default=9)
+parser.add_argument('--canny_lower',  type=int, default=150)
+parser.add_argument('--canny_upper',  type=int, default=150)
+parser.add_argument('--hough_line_length', type=int, default=15)
+parser.add_argument('--hough_line_treshold', type=int, default=20)
+parser.add_argument('--hough_line_gap', type=int, default=5)
+
+parser.add_argument('--image_path', help="Do image_path option", type=str)
+parser.add_argument('--new_image_path', help="Do new_image_path option" ,type=str)
+parser.add_argument('--method',  type=str, default="hough")
+parser.add_argument('--cascade', type=str, default="cars")
+args=parser.parse_args()
+
+method =  args.method
 os.environ['KMP_WARNINGS'] = '0'
 if method == "hough":
-  image_path = str(sys.argv[-2])
-  new_image_path = str(sys.argv[-3])
-  find_objects_by_edges(image_path, new_image_path)
+  image_path = args.image_path
+  new_image_path = args.new_image_path
+  blur_strength = args.blur_strength
+  canny_lower = args.canny_lower
+  canny_upper = args.canny_upper
+  hough_line_length = args.hough_line_length
+  hough_line_treshold = args.hough_line_treshold
+  hough_line_gap = args.hough_line_gap
+  params = {"blur_strength": blur_strength, "canny_lower": canny_lower, "hough_line_gap": hough_line_gap, "hough_line_treshold": hough_line_treshold, "hough_line_length": hough_line_length, "canny_upper": canny_upper}
+  find_objects_by_edges(image_path, new_image_path, params)
   print(new_image_path)
 elif method == "haar":
-  image_path = str(sys.argv[-2])
-  new_image_path = str(sys.argv[-3])
-  cascade = str(sys.argv[-4])
+  image_path = args.image_path
+  new_image_path = args.new_image_path
+  cascade = args.cascade
   find_objects_viola_jones(image_path, new_image_path, cascade)
   print(new_image_path)
 elif method == "tensorflow":
-  image_path = str(sys.argv[-2])
-  new_image_path = str(sys.argv[-3])
+  image_path = args.image_path
+  new_image_path = args.new_image_path
   find_objects_tensorflow(image_path, new_image_path)
   print(new_image_path)
+
+
+# %%
