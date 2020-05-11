@@ -12,74 +12,95 @@
   </div>
 
 
-  <div>
-    <%= if @image.hough_transform do %>
-      <h1>Hough image: <%= @image.hough_transform.result[:file_name] %></h1>
-      <div>
-        <img src="<%= Od.Image.url({@image.hough_transform.result, @image}) %>"/>
-      </div>
-      <button type="button" phx-click="run_hough" phx-disable-with="running...">
-        Run hough again
-      </button>
-      <h2> Preprocessing params: </h2>
-      <div style="padding-left: 50px">
-        <h3> Actual blur strength is: <%= @image.hough_transform.blur_strength %> </h3>
-        <button phx-click="dec_hough_blur_strength"> - </button>
-        <button phx-click="inc_hough_blur_strength"> + </button>
-
-        <h3> Actual canny lower is: <%= @image.hough_transform.canny_lower %> </h3>
-        <button phx-click="dec_hough_canny_lower"> - </button>
-        <button phx-click="inc_hough_canny_lower"> + </button>
-
-        <h3> Actual canny upper is: <%= @image.hough_transform.canny_upper %> </h3>
-        <button phx-click="dec_hough_canny_upper"> - </button>
-        <button phx-click="inc_hough_canny_upper"> + </button>
-      </div>
-      <h2> Hough Mode:  <%= @image.hough_transform.mode %> </h2>
-        <button phx-click="set_hough_mode_to_lines"> Lines </button>
-        <button phx-click="set_hough_mode_to_circles"> Circles </button>
-        <button phx-click="set_hough_mode_to_lines_and_circles"> Lines and circles </button>
-
-      <%= if @image.hough_transform.mode in ~w(lines lines_and_circles) do %>
-        <h2> Line Detection: </h2>
-        <div style="padding-left: 50px">
-          <h3> Actual hough line length is: <%= @image.hough_transform.line_length %> </h3>
-          <button phx-click="dec_hough_line_length"> - </button>
-          <button phx-click="inc_hough_line_length"> + </button>
-
-          <h3> Actual hough line treshold is: <%= @image.hough_transform.line_treshold %> </h3>
-          <button phx-click="dec_hough_line_treshold"> - </button>
-          <button phx-click="inc_hough_line_treshold"> + </button>
-
-          <h3> Actual hough line gap is: <%= @image.hough_transform.line_gap %> </h3>
-          <button phx-click="dec_hough_line_gap"> - </button>
-          <button phx-click="inc_hough_line_gap"> + </button>
+  <div class="my-5">
+    <h1 class="text-center my-5">Hough image:</h1>
+    <div class="d-flex justify-content-center">
+      <%= if @image.hough_transform do %>
+        <div>
+          <img src="<%= Od.Image.url({@image.hough_transform.result, @image}) %>" style="max-height: 100rem;" />
         </div>
-      <% end %>
-      <%= if @image.hough_transform.mode in ~w(circles lines_and_circles) do %>
-        <h2> Circle Detection: </h2>
-        <div style="padding-left: 50px">
-          <h3> Actual hough circle min dist is: <%= @image.hough_transform.circle_min_dist %> </h3>
-          <button phx-click="dec_hough_circle_min_dist"> - </button>
-          <button phx-click="inc_hough_circle_min_dist"> + </button>
+        <div class="ml-5 mt-5">
+          <svg width="20" height="20">
+            <rect width="20" height="20" style="fill:rgb(255,0,255);stroke-width:3;stroke:rgb(0,0,0)" />
+          </svg>
+          <button class="btn btn-lg btn-outline-primary " type="button" phx-click="run_hough" phx-disable-with="running...">
+            Run hough again
+          </button>
+          <h1 class="my-5 text-uppercase"> Preprocessing params: </h1>
+          <div style="padding-left: 50px">
+            <div class="mt-3">
+              <span class="h2"> Actual blur strength is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.blur_strength %> </span> </span>
+              <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_blur_strength"> - </button>
+              <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_blur_strength"> + </button>
+            </div>
+            <div class="mt-3">
+              <span class="h2"> Actual canny lower is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.canny_lower %> </span> </span>
+              <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_canny_lower"> - </button>
+              <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_canny_lower"> + </button>
+            </div>
+            <div class="mt-3">
+              <span class="h2"> Actual canny upper is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.canny_upper %> </span> </span>
+              <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_canny_upper"> - </button>
+              <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_canny_upper"> + </button>
+            </div>
+          </div>
+          <h1 class="my-5 text-uppercase"> Hough Mode:  <u><span class="font-weight-bold font-italic text-capitalize"> <%= String.replace(@image.hough_transform.mode, "_", " ") %> </span></u> </h1>
+            <button class="btn btn-lg btn-outline-primary m-1" phx-click="set_hough_mode_to_lines"> Lines </button>
+            <button class="btn btn-lg btn-outline-primary m-1" phx-click="set_hough_mode_to_circles"> Circles </button>
+            <button class="btn btn-lg btn-outline-primary m-1" phx-click="set_hough_mode_to_lines_and_circles"> Lines and circles </button>
 
-          <h3> Actual hough circle min radius is: <%= @image.hough_transform.circle_min_radius %> </h3>
-          <button phx-click="dec_hough_circle_min_radius"> - </button>
-          <button phx-click="inc_hough_circle_min_radius"> + </button>
-
-          <h3> Actual hough circle max radius is: <%= @image.hough_transform.circle_max_radius %> </h3>
-          <button phx-click="dec_hough_circle_max_radius"> - </button>
-          <button phx-click="inc_hough_circle_max_radius"> + </button>
-
-          <h3> Actual hough circle param1 is: <%= @image.hough_transform.circle_param1 %> </h3>
-          <button phx-click="dec_hough_circle_param1"> - </button>
-          <button phx-click="inc_hough_circle_param1"> + </button>
-
-          <h3> Actual hough circle param2 is: <%= @image.hough_transform.circle_param2 %> </h3>
-          <button phx-click="dec_hough_circle_param2"> - </button>
-          <button phx-click="inc_hough_circle_param2"> + </button>
+          <%= if @image.hough_transform.mode in ~w(lines lines_and_circles) do %>
+            <h1 class="my-5 text-uppercase"> Line Detection: </h1>
+            <div style="padding-left: 50px">
+              <div class="mt-3">
+                <span class="h2"> Actual hough line length is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.line_length %> </span> </span>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_line_length"> - </button>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_line_length"> + </button>
+              </div>
+              <div class="mt-3">
+                <span class="h2"> Actual hough line treshold is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.line_treshold %> </span> </span>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_line_treshold"> - </button>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_line_treshold"> + </button>
+              </div>
+              <div class="mt-3">
+                <span class="h2"> Actual hough line gap is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.line_gap %> </span> </span>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_line_gap"> - </button>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_line_gap"> + </button>
+              </div>
+            </div>
+          <% end %>
+          <%= if @image.hough_transform.mode in ~w(circles lines_and_circles) do %>
+            <h1 class="my-5 text-uppercase"> Circle Detection: </h1>
+            <div style="padding-left: 50px">
+              <div class="mt-3">
+                <span class="h2"> Actual hough circle min dist is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.circle_min_dist %> </span> </span>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_circle_min_dist"> - </button>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_circle_min_dist"> + </button>
+              </div>
+              <div class="mt-3">
+                <span class="h2"> Actual hough circle min radius is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.circle_min_radius %> </span> </span>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_circle_min_radius"> - </button>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_circle_min_radius"> + </button>
+              </div>
+              <div class="mt-3">
+                <span class="h2"> Actual hough circle max radius is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.circle_max_radius %> </span> </span>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_circle_max_radius"> - </button>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_circle_max_radius"> + </button>
+              </div>
+              <div class="mt-3">
+                <span class="h2"> Actual hough circle param1 is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.circle_param1 %> </span> </span>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_circle_param1"> - </button>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_circle_param1"> + </button>
+              </div>
+              <div class="mt-3">
+                <span class="h2"> Actual hough circle param2 is: <span class="font-weight-bold font-italic h1"> <%= @image.hough_transform.circle_param2 %> </span> </span>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_hough_circle_param2"> - </button>
+                <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_hough_circle_param2"> + </button>
+              </div>
+            </div>
+          <% end %>
         </div>
-      <% end %>
+      </div>
     <% end %>
   </div>
 
