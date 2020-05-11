@@ -36,6 +36,7 @@ npm-debug.log
 /priv/static/
 /config/*.secret.exs
 /uploads
+/models
 /_dirname
 .elixir_ls
 /node_modules

@@ -25,8 +25,6 @@ defmodule Od.Gallery.Python do
           Regex.replace(~r(\.jpeg$), image_path, "_hough.jpeg")
       end
 
-    IO.inspect(mode)
-
     command =
       ~s(python3 object_detection_algorithms.py --hough_line_gap #{line_gap} --hough_line_treshold #{
         line_treshold
