@@ -18,7 +18,7 @@ defmodule Od.Gallery do
 
   """
   def list_images do
-    Repo.all(from image in Image, order_by: {:desc, image.id})
+    Repo.all(from image in Image, order_by: {:desc, image.id}, preload: ^Image.preload_list())
   end
 
   @doc """
@@ -35,7 +35,9 @@ defmodule Od.Gallery do
       ** (Ecto.NoResultsError)
 
   """
-  def get_image!(id), do: Repo.get!(Image, id)
+  def get_image!(id) do
+    Image |> Repo.get!(id) |> Repo.preload(Image.preload_list())
+  end
 
   @doc """
   Creates a image.
@@ -88,18 +90,21 @@ defmodule Od.Gallery do
 
   """
   def delete_image(%Image{} = image) do
-    delete_inner_image(image.image)
-    delete_inner_image(image.haar_image)
-    delete_inner_image(image.hough_image)
-    delete_inner_image(image.tensorflow_image)
+    delete_arc_image(image.image)
+    delete_arc_image(image.haar_image)
+    delete_arc_image(image.tensorflow_image)
+    delete_arc_inner_image(image.hough_transform)
 
     image
     |> Repo.delete()
     |> broadcast(:image_deleted)
   end
 
-  defp delete_inner_image(nil), do: nil
-  defp delete_inner_image(image), do: Od.Image.delete({image, image})
+  defp delete_arc_image(nil), do: nil
+  defp delete_arc_image(image), do: Od.Image.delete({image, image})
+
+  defp delete_arc_inner_image(nil), do: nil
+  defp delete_arc_inner_image(image), do: Od.Image.delete({image.result, image})
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking image changes.

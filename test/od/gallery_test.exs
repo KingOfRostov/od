@@ -6,9 +6,27 @@ defmodule Od.GalleryTest do
   describe "images" do
     alias Od.Gallery.Image
 
-    @valid_attrs %{haar_image: "some haar_image", hough_image: "some hough_image", image: "some image", tensorflow_image: "some tensorflow_image", uuid: "some uuid"}
-    @update_attrs %{haar_image: "some updated haar_image", hough_image: "some updated hough_image", image: "some updated image", tensorflow_image: "some updated tensorflow_image", uuid: "some updated uuid"}
-    @invalid_attrs %{haar_image: nil, hough_image: nil, image: nil, tensorflow_image: nil, uuid: nil}
+    @valid_attrs %{
+      haar_image: "some haar_image",
+      hough_transform: "some hough_transform",
+      image: "some image",
+      tensorflow_image: "some tensorflow_image",
+      uuid: "some uuid"
+    }
+    @update_attrs %{
+      haar_image: "some updated haar_image",
+      hough_transform: "some updated hough_transform",
+      image: "some updated image",
+      tensorflow_image: "some updated tensorflow_image",
+      uuid: "some updated uuid"
+    }
+    @invalid_attrs %{
+      haar_image: nil,
+      hough_transform: nil,
+      image: nil,
+      tensorflow_image: nil,
+      uuid: nil
+    }
 
     def image_fixture(attrs \\ %{}) do
       {:ok, image} =
@@ -32,7 +50,7 @@ defmodule Od.GalleryTest do
     test "create_image/1 with valid data creates a image" do
       assert {:ok, %Image{} = image} = Gallery.create_image(@valid_attrs)
       assert image.haar_image == "some haar_image"
-      assert image.hough_image == "some hough_image"
+      assert image.hough_transform == "some hough_transform"
       assert image.image == "some image"
       assert image.tensorflow_image == "some tensorflow_image"
       assert image.uuid == "some uuid"
@@ -46,7 +64,7 @@ defmodule Od.GalleryTest do
       image = image_fixture()
       assert {:ok, %Image{} = image} = Gallery.update_image(image, @update_attrs)
       assert image.haar_image == "some updated haar_image"
-      assert image.hough_image == "some updated hough_image"
+      assert image.hough_transform == "some updated hough_transform"
       assert image.image == "some updated image"
       assert image.tensorflow_image == "some updated tensorflow_image"
       assert image.uuid == "some updated uuid"

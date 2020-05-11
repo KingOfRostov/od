@@ -37,6 +37,7 @@ defmodule OdWeb.ImageLive.Index do
 
   @impl true
   def handle_info({:image_created, image}, socket) do
+    image = Gallery.get_image!(image.id)
     {:noreply, update(socket, :images, fn images -> [image | images] end)}
   end
 

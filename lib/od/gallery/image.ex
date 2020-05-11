@@ -5,13 +5,15 @@ defmodule Od.Gallery.Image do
   alias Od.Gallery
   alias Od.Gallery.Python
   alias Od.Helpers.ImageToBinaryConverter
+  alias Od.Repo
+  @preload_list ~w(hough_transform)a
   @required ~w(image)a
   @optional ~w(uuid)a
-  @attachments_atoms ~w(image haar_image hough_image tensorflow_image)a
-  @attachments_strings ~w(image haar_image hough_image tensorflow_image)
+  @attachments_atoms ~w(image haar_image tensorflow_image)a
+  @attachments_strings ~w(image haar_image tensorflow_image)
   schema "images" do
     field :haar_image, Od.Image.Type
-    field :hough_image, Od.Image.Type
+    has_one :hough_transform, Gallery.HoughTransform, on_replace: :delete, on_delete: :delete_all
     field :image, Od.Image.Type
     field :tensorflow_image, Od.Image.Type
     field :uuid, :string
@@ -20,38 +22,41 @@ defmodule Od.Gallery.Image do
 
   @doc false
   def changeset(image, attrs) do
-    # TODO костыль, пока нет логина и сессии
     attrs = ImageToBinaryConverter.with_files(attrs, @attachments_strings)
 
     image
     |> Map.update(:uuid, Ecto.UUID.generate(), fn val -> val || Ecto.UUID.generate() end)
     |> cast(attrs, @required ++ @optional)
     |> cast_attachments(attrs, @attachments_atoms)
+    |> cast_assoc(:hough_transform)
     |> validate_required(@required)
   end
 
   def run_all_algorithms(image) do
+    image = Repo.preload(image, preload_list())
     %{filename: filename, cwd: cwd} = get_filename_and_cwd(image)
 
     Task.start(fn ->
+      hough_defaults = Gallery.HoughTransform.defaults()
+
       run_hough(image, cwd, filename, %{
-        canny_lower: 150,
-        canny_upper: 150,
-        hough_line_length: 15,
-        hough_line_treshold: 20,
-        blur_strength: 9,
-        hough_line_gap: 5,
-        hough_circle_min_dist: 50,
-        hough_circle_min_radius: 10,
-        hough_circle_max_radius: 50,
-        hough_circle_param1: 500,
-        hough_circle_param2: 20,
-        hough_mode: "lines"
+        blur_strength: hough_defaults.blur_strength,
+        canny_lower: hough_defaults.canny_lower,
+        canny_upper: hough_defaults.canny_upper,
+        line_length: hough_defaults.line_length,
+        line_treshold: hough_defaults.line_treshold,
+        line_gap: hough_defaults.line_gap,
+        circle_min_dist: hough_defaults.circle_min_dist,
+        circle_min_radius: hough_defaults.circle_min_radius,
+        circle_max_radius: hough_defaults.circle_max_radius,
+        circle_param1: hough_defaults.circle_param1,
+        circle_param2: hough_defaults.circle_param2,
+        mode: hough_defaults.mode
       })
     end)
 
-    Task.start(fn -> run_haar(image, cwd, filename) end)
-    Task.start(fn -> run_tensorflow(image, cwd, filename) end)
+    # Task.start(fn -> run_haar(image, cwd, filename) end)
+    # Task.start(fn -> run_tensorflow(image, cwd, filename) end)
   end
 
   def run_hough_algorithm(image, param) do
@@ -103,16 +108,28 @@ defmodule Od.Gallery.Image do
 
   def run_hough(_image, _cwd, nil, _), do: nil
 
-  def run_hough(image, cwd, filename, param) do
-    hough_image_path = Python.run_hough(cwd <> filename, param)
-    filename = hough_image_path |> String.split("/") |> List.last()
+  def run_hough(image, cwd, filename, params) do
+    hough_transform_path = Python.run_hough(cwd <> filename, params)
+    filename = hough_transform_path |> String.split("/") |> List.last()
+
+    update_params = %{
+      hough_transform:
+        Map.merge(params, %{
+          result: %Plug.Upload{
+            filename: filename,
+            path: Path.expand(hough_transform_path)
+          },
+          image_id: image.id
+        })
+    }
 
     image
-    |> Gallery.update_image(%{
-      "hough_image" => %Plug.Upload{filename: filename, path: Path.expand(hough_image_path)}
-    })
-    |> delete_python_image(hough_image_path)
+    |> Repo.preload(preload_list())
+    |> Gallery.update_image(update_params)
+    |> delete_python_image(hough_transform_path)
   end
+
+  def preload_list, do: @preload_list
 
   defp delete_python_image({:ok, _}, image_path) do
     File.rm!(image_path)
@@ -126,7 +143,8 @@ defmodule Od.Gallery.Image do
     filename =
       Enum.find(
         File.ls!(storage_dir <> "/"),
-        &(&1 =~ Od.Image.filename(:original, {image.image, image}))
+        &(String.replace(&1, ~r/(.jpg$)?(.jpeg$)?(.png$)?/, "") ==
+            Od.Image.filename(:original, {image.image, image}))
       )
 
     cwd = File.cwd!() <> "/" <> storage_dir

@@ -16,90 +16,126 @@ defmodule OdWeb.ImageLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:image, image)
-     |> assign(:blur_strength, 1)
-     |> assign(:canny_lower, 150)
-     |> assign(:canny_upper, 150)
-     |> assign(:hough_line_length, 15)
-     |> assign(:hough_line_treshold, 20)
-     |> assign(:hough_line_gap, 5)
-     |> assign(:hough_circle_min_dist, 50)
-     |> assign(:hough_circle_min_radius, 10)
-     |> assign(:hough_circle_max_radius, 50)
-     |> assign(:hough_circle_param1, 500)
-     |> assign(:hough_circle_param2, 20)
-     |> assign(:hough_mode, "lines")}
+     |> assign(:image, image)}
   end
 
   @impl true
   def handle_event("inc_hough_line_gap", _, socket) do
-    hough_line_gap = socket.assigns.hough_line_gap
-    {:noreply, assign(socket, :hough_line_gap, hough_line_gap + 2)}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    line_gap = hough_transform.line_gap
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, line_gap: line_gap + 2}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("dec_hough_line_gap", _, socket) do
-    hough_line_gap = socket.assigns.hough_line_gap
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    line_gap = hough_transform.line_gap
 
-    new_hough_line_gap =
-      if hough_line_gap == 1 do
+    new_line_gap =
+      if line_gap == 1 do
         1
       else
-        hough_line_gap - 2
+        line_gap - 2
       end
 
-    {:noreply, assign(socket, :hough_line_gap, new_hough_line_gap)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, line_gap: new_line_gap}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("inc_hough_line_treshold", _, socket) do
-    hough_line_treshold = socket.assigns.hough_line_treshold
-    {:noreply, assign(socket, :hough_line_treshold, hough_line_treshold + 2)}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    line_treshold = hough_transform.line_treshold
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, line_treshold: line_treshold + 2}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("dec_hough_line_treshold", _, socket) do
-    hough_line_treshold = socket.assigns.hough_line_treshold
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    line_treshold = hough_transform.line_treshold
 
-    new_hough_line_treshold =
-      if hough_line_treshold == 0 do
+    new_line_treshold =
+      if line_treshold == 0 do
         0
       else
-        hough_line_treshold - 2
+        line_treshold - 2
       end
 
-    {:noreply, assign(socket, :hough_line_treshold, new_hough_line_treshold)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, line_treshold: new_line_treshold}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("inc_hough_line_length", _, socket) do
-    hough_line_length = socket.assigns.hough_line_length
-    {:noreply, assign(socket, :hough_line_length, hough_line_length + 2)}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    line_length = hough_transform.line_length
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, line_length: line_length + 2}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("dec_hough_line_length", _, socket) do
-    hough_line_length = socket.assigns.hough_line_length
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    line_length = hough_transform.line_length
 
-    new_hough_line_length =
-      if hough_line_length == 1 do
+    new_line_length =
+      if line_length == 1 do
         1
       else
-        hough_line_length - 2
+        line_length - 2
       end
 
-    {:noreply, assign(socket, :hough_line_length, new_hough_line_length)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, line_length: new_line_length}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
-  def handle_event("inc_blur_strength", _, socket) do
-    blur_strength = socket.assigns.blur_strength
-    {:noreply, assign(socket, :blur_strength, blur_strength + 2)}
+  def handle_event("inc_hough_blur_strength", _, socket) do
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    blur_strength = hough_transform.blur_strength
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, blur_strength: blur_strength + 2}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
-  def handle_event("dec_blur_strength", _, socket) do
-    blur_strength = socket.assigns.blur_strength
+  def handle_event("dec_hough_blur_strength", _, socket) do
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    blur_strength = hough_transform.blur_strength
 
     new_blur_strength =
       if blur_strength == 1 do
@@ -108,11 +144,17 @@ defmodule OdWeb.ImageLive.Show do
         blur_strength - 2
       end
 
-    {:noreply, assign(socket, :blur_strength, new_blur_strength)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, blur_strength: new_blur_strength}
+    })
+
+    {:noreply, socket}
   end
 
-  def handle_event("inc_canny_upper", _, socket) do
-    canny_upper = socket.assigns.canny_upper
+  def handle_event("inc_hough_canny_upper", _, socket) do
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    canny_upper = hough_transform.canny_upper
 
     new_canny_upper =
       if canny_upper == 255 do
@@ -121,12 +163,18 @@ defmodule OdWeb.ImageLive.Show do
         canny_upper + 5
       end
 
-    {:noreply, assign(socket, :canny_upper, new_canny_upper)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, canny_upper: new_canny_upper}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
-  def handle_event("dec_canny_upper", _, socket) do
-    canny_upper = socket.assigns.canny_upper
+  def handle_event("dec_hough_canny_upper", _, socket) do
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    canny_upper = hough_transform.canny_upper
 
     new_canny_upper =
       if canny_upper == 10 do
@@ -135,11 +183,17 @@ defmodule OdWeb.ImageLive.Show do
         canny_upper - 5
       end
 
-    {:noreply, assign(socket, :canny_upper, new_canny_upper)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, canny_upper: new_canny_upper}
+    })
+
+    {:noreply, socket}
   end
 
-  def handle_event("inc_canny_lower", _, socket) do
-    canny_lower = socket.assigns.canny_lower
+  def handle_event("inc_hough_canny_lower", _, socket) do
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    canny_lower = hough_transform.canny_lower
 
     new_canny_lower =
       if canny_lower == 255 do
@@ -148,12 +202,18 @@ defmodule OdWeb.ImageLive.Show do
         canny_lower + 5
       end
 
-    {:noreply, assign(socket, :canny_lower, new_canny_lower)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, canny_lower: new_canny_lower}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
-  def handle_event("dec_canny_lower", _, socket) do
-    canny_lower = socket.assigns.canny_lower
+  def handle_event("dec_hough_canny_lower", _, socket) do
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    canny_lower = hough_transform.canny_lower
 
     new_canny_lower =
       if canny_lower == 10 do
@@ -162,131 +222,223 @@ defmodule OdWeb.ImageLive.Show do
         canny_lower - 5
       end
 
-    {:noreply, assign(socket, :canny_lower, new_canny_lower)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, canny_lower: new_canny_lower}
+    })
+
+    {:noreply, socket}
   end
 
   def handle_event("set_hough_mode_to_lines", _, socket) do
-    {:noreply, assign(socket, :hough_mode, "lines")}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, mode: "lines"}
+    })
+
+    {:noreply, socket}
   end
 
   def handle_event("set_hough_mode_to_circles", _, socket) do
-    {:noreply, assign(socket, :hough_mode, "circles")}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, mode: "circles"}
+    })
+
+    {:noreply, socket}
   end
 
   def handle_event("set_hough_mode_to_lines_and_circles", _, socket) do
-    {:noreply, assign(socket, :hough_mode, "lines_and_circles")}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, mode: "lines_and_circles"}
+    })
+
+    {:noreply, socket}
   end
 
   def handle_event("inc_hough_circle_min_dist", _, socket) do
-    hough_circle_min_dist = socket.assigns.hough_circle_min_dist
-    {:noreply, assign(socket, :hough_circle_min_dist, hough_circle_min_dist + 5)}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    circle_min_dist = hough_transform.circle_min_dist
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, circle_min_dist: circle_min_dist + 5}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("dec_hough_circle_min_dist", _, socket) do
-    hough_circle_min_dist = socket.assigns.hough_circle_min_dist
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    circle_min_dist = hough_transform.circle_min_dist
 
-    new_hough_circle_min_dist =
-      if hough_circle_min_dist == 0 do
+    new_circle_min_dist =
+      if circle_min_dist == 0 do
         0
       else
-        hough_circle_min_dist - 5
+        circle_min_dist - 5
       end
 
-    {:noreply, assign(socket, :hough_circle_min_dist, new_hough_circle_min_dist)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, circle_min_dist: new_circle_min_dist}
+    })
+
+    {:noreply, socket}
   end
 
   def handle_event("inc_hough_circle_min_radius", _, socket) do
-    hough_circle_min_radius = socket.assigns.hough_circle_min_radius
-    {:noreply, assign(socket, :hough_circle_min_radius, hough_circle_min_radius + 5)}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    circle_min_radius = hough_transform.circle_min_radius
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, circle_min_radius: circle_min_radius + 5}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("dec_hough_circle_min_radius", _, socket) do
-    hough_circle_min_radius = socket.assigns.hough_circle_min_radius
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    circle_min_radius = hough_transform.circle_min_radius
 
-    new_hough_circle_min_radius =
-      if hough_circle_min_radius == 0 do
+    new_circle_min_radius =
+      if circle_min_radius == 0 do
         0
       else
-        hough_circle_min_radius - 5
+        circle_min_radius - 5
       end
 
-    {:noreply, assign(socket, :hough_circle_min_radius, new_hough_circle_min_radius)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, circle_min_radius: new_circle_min_radius}
+    })
+
+    {:noreply, socket}
   end
 
   def handle_event("inc_hough_circle_max_radius", _, socket) do
-    hough_circle_max_radius = socket.assigns.hough_circle_max_radius
-    {:noreply, assign(socket, :hough_circle_max_radius, hough_circle_max_radius + 5)}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    circle_max_radius = hough_transform.circle_max_radius
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, circle_max_radius: circle_max_radius + 5}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("dec_hough_circle_max_radius", _, socket) do
-    hough_circle_max_radius = socket.assigns.hough_circle_max_radius
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    circle_max_radius = hough_transform.circle_max_radius
 
-    new_hough_circle_max_radius =
-      if hough_circle_max_radius == 0 do
+    new_circle_max_radius =
+      if circle_max_radius == 0 do
         0
       else
-        hough_circle_max_radius - 5
+        circle_max_radius - 5
       end
 
-    {:noreply, assign(socket, :hough_circle_max_radius, new_hough_circle_max_radius)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, circle_max_radius: new_circle_max_radius}
+    })
+
+    {:noreply, socket}
   end
 
   def handle_event("inc_hough_circle_param1", _, socket) do
-    hough_circle_param1 = socket.assigns.hough_circle_param1
-    {:noreply, assign(socket, :hough_circle_param1, hough_circle_param1 + 10)}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    circle_param1 = hough_transform.circle_param1
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, circle_param1: circle_param1 + 10}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("dec_hough_circle_param1", _, socket) do
-    hough_circle_param1 = socket.assigns.hough_circle_param1
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    circle_param1 = hough_transform.circle_param1
 
-    new_hough_circle_param1 =
-      if hough_circle_param1 == 0 do
+    new_circle_param1 =
+      if circle_param1 == 0 do
         0
       else
-        hough_circle_param1 - 10
+        circle_param1 - 10
       end
 
-    {:noreply, assign(socket, :hough_circle_param1, new_hough_circle_param1)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, circle_param1: new_circle_param1}
+    })
+
+    {:noreply, socket}
   end
 
   def handle_event("inc_hough_circle_param2", _, socket) do
-    hough_circle_param2 = socket.assigns.hough_circle_param2
-    {:noreply, assign(socket, :hough_circle_param2, hough_circle_param2 + 2)}
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    circle_param2 = hough_transform.circle_param2
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, circle_param2: circle_param2 + 2}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("dec_hough_circle_param2", _, socket) do
-    hough_circle_param2 = socket.assigns.hough_circle_param2
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+    circle_param2 = hough_transform.circle_param2
 
-    new_hough_circle_param2 =
-      if hough_circle_param2 == 0 do
+    new_circle_param2 =
+      if circle_param2 == 0 do
         0
       else
-        hough_circle_param2 - 2
+        circle_param2 - 2
       end
 
-    {:noreply, assign(socket, :hough_circle_param2, new_hough_circle_param2)}
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, circle_param2: new_circle_param2}
+    })
+
+    {:noreply, socket}
   end
 
   @impl true
   def handle_event("run_hough", _, socket) do
+    hough_transform = socket.assigns.image.hough_transform
+
     Gallery.run_hough_algorithm(socket.assigns.image, %{
-      blur_strength: socket.assigns.blur_strength,
-      canny_lower: socket.assigns.canny_lower,
-      canny_upper: socket.assigns.canny_upper,
-      hough_line_length: socket.assigns.hough_line_length,
-      hough_line_treshold: socket.assigns.hough_line_treshold,
-      hough_line_gap: socket.assigns.hough_line_gap,
-      hough_circle_min_dist: socket.assigns.hough_circle_min_dist,
-      hough_circle_min_radius: socket.assigns.hough_circle_min_radius,
-      hough_circle_max_radius: socket.assigns.hough_circle_max_radius,
-      hough_circle_param1: socket.assigns.hough_circle_param1,
-      hough_circle_param2: socket.assigns.hough_circle_param2,
-      hough_mode: socket.assigns.hough_mode
+      blur_strength: hough_transform.blur_strength,
+      canny_lower: hough_transform.canny_lower,
+      canny_upper: hough_transform.canny_upper,
+      line_length: hough_transform.line_length,
+      line_treshold: hough_transform.line_treshold,
+      line_gap: hough_transform.line_gap,
+      circle_min_dist: hough_transform.circle_min_dist,
+      circle_min_radius: hough_transform.circle_min_radius,
+      circle_max_radius: hough_transform.circle_max_radius,
+      circle_param1: hough_transform.circle_param1,
+      circle_param2: hough_transform.circle_param2,
+      mode: hough_transform.mode
     })
 
     {:noreply, socket}

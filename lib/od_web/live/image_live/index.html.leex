@@ -31,8 +31,10 @@
         </td>
         <td>
           <div>
-            <%= image.hough_image[:file_name] %>
-            <img src="<%= Od.Image.url({image.hough_image, image}, :thumb) %>"/>
+            <%= if image.hough_transform do %>
+              <%= image.hough_transform.result[:file_name] %>
+              <img src="<%= Od.Image.url({image.hough_transform.result, image}, :thumb) %>"/>
+            <% end %>
           </div>
         </td>
         <td>

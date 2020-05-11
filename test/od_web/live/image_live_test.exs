@@ -5,9 +5,27 @@ defmodule OdWeb.ImageLiveTest do
 
   alias Od.Gallery
 
-  @create_attrs %{haar_image: "some haar_image", hough_image: "some hough_image", image: "some image", tensorflow_image: "some tensorflow_image", uuid: "some uuid"}
-  @update_attrs %{haar_image: "some updated haar_image", hough_image: "some updated hough_image", image: "some updated image", tensorflow_image: "some updated tensorflow_image", uuid: "some updated uuid"}
-  @invalid_attrs %{haar_image: nil, hough_image: nil, image: nil, tensorflow_image: nil, uuid: nil}
+  @create_attrs %{
+    haar_image: "some haar_image",
+    hough_transform: "some hough_transform",
+    image: "some image",
+    tensorflow_image: "some tensorflow_image",
+    uuid: "some uuid"
+  }
+  @update_attrs %{
+    haar_image: "some updated haar_image",
+    hough_transform: "some updated hough_transform",
+    image: "some updated image",
+    tensorflow_image: "some updated tensorflow_image",
+    uuid: "some updated uuid"
+  }
+  @invalid_attrs %{
+    haar_image: nil,
+    hough_transform: nil,
+    image: nil,
+    tensorflow_image: nil,
+    uuid: nil
+  }
 
   defp fixture(:image) do
     {:ok, image} = Gallery.create_image(@create_attrs)
@@ -33,7 +51,7 @@ defmodule OdWeb.ImageLiveTest do
       {:ok, index_live, _html} = live(conn, Routes.image_index_path(conn, :index))
 
       assert index_live |> element("a", "New Image") |> render_click() =~
-        "New Image"
+               "New Image"
 
       assert_patch(index_live, Routes.image_index_path(conn, :new))
 
@@ -55,7 +73,7 @@ defmodule OdWeb.ImageLiveTest do
       {:ok, index_live, _html} = live(conn, Routes.image_index_path(conn, :index))
 
       assert index_live |> element("#image-#{image.id} a", "Edit") |> render_click() =~
-        "Edit Image"
+               "Edit Image"
 
       assert_patch(index_live, Routes.image_index_path(conn, :edit, image))
 
@@ -95,7 +113,7 @@ defmodule OdWeb.ImageLiveTest do
       {:ok, show_live, _html} = live(conn, Routes.image_show_path(conn, :show, image))
 
       assert show_live |> element("a", "Edit") |> render_click() =~
-        "Edit Image"
+               "Edit Image"
 
       assert_patch(show_live, Routes.image_show_path(conn, :edit, image))
 

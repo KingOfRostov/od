@@ -7,6 +7,8 @@ defmodule OdWeb.Gallery.ImageController do
       {:ok, image} ->
         Gallery.run_all_algorithms(image)
 
+        image = Gallery.get_image!(image.id)
+
         conn
         |> put_flash(:info, "Image updated successfully")
         |> redirect(to: Routes.image_index_path(conn, :index))
