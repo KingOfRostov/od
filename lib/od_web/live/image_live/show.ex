@@ -22,7 +22,13 @@ defmodule OdWeb.ImageLive.Show do
      |> assign(:canny_upper, 150)
      |> assign(:hough_line_length, 15)
      |> assign(:hough_line_treshold, 20)
-     |> assign(:hough_line_gap, 5)}
+     |> assign(:hough_line_gap, 5)
+     |> assign(:hough_circle_min_dist, 50)
+     |> assign(:hough_circle_min_radius, 10)
+     |> assign(:hough_circle_max_radius, 50)
+     |> assign(:hough_circle_param1, 500)
+     |> assign(:hough_circle_param2, 20)
+     |> assign(:hough_mode, "lines")}
   end
 
   @impl true
@@ -159,6 +165,113 @@ defmodule OdWeb.ImageLive.Show do
     {:noreply, assign(socket, :canny_lower, new_canny_lower)}
   end
 
+  def handle_event("set_hough_mode_to_lines", _, socket) do
+    {:noreply, assign(socket, :hough_mode, "lines")}
+  end
+
+  def handle_event("set_hough_mode_to_circles", _, socket) do
+    {:noreply, assign(socket, :hough_mode, "circles")}
+  end
+
+  def handle_event("set_hough_mode_to_lines_and_circles", _, socket) do
+    {:noreply, assign(socket, :hough_mode, "lines_and_circles")}
+  end
+
+  def handle_event("inc_hough_circle_min_dist", _, socket) do
+    hough_circle_min_dist = socket.assigns.hough_circle_min_dist
+    {:noreply, assign(socket, :hough_circle_min_dist, hough_circle_min_dist + 5)}
+  end
+
+  @impl true
+  def handle_event("dec_hough_circle_min_dist", _, socket) do
+    hough_circle_min_dist = socket.assigns.hough_circle_min_dist
+
+    new_hough_circle_min_dist =
+      if hough_circle_min_dist == 0 do
+        0
+      else
+        hough_circle_min_dist - 5
+      end
+
+    {:noreply, assign(socket, :hough_circle_min_dist, new_hough_circle_min_dist)}
+  end
+
+  def handle_event("inc_hough_circle_min_radius", _, socket) do
+    hough_circle_min_radius = socket.assigns.hough_circle_min_radius
+    {:noreply, assign(socket, :hough_circle_min_radius, hough_circle_min_radius + 5)}
+  end
+
+  @impl true
+  def handle_event("dec_hough_circle_min_radius", _, socket) do
+    hough_circle_min_radius = socket.assigns.hough_circle_min_radius
+
+    new_hough_circle_min_radius =
+      if hough_circle_min_radius == 0 do
+        0
+      else
+        hough_circle_min_radius - 5
+      end
+
+    {:noreply, assign(socket, :hough_circle_min_radius, new_hough_circle_min_radius)}
+  end
+
+  def handle_event("inc_hough_circle_max_radius", _, socket) do
+    hough_circle_max_radius = socket.assigns.hough_circle_max_radius
+    {:noreply, assign(socket, :hough_circle_max_radius, hough_circle_max_radius + 5)}
+  end
+
+  @impl true
+  def handle_event("dec_hough_circle_max_radius", _, socket) do
+    hough_circle_max_radius = socket.assigns.hough_circle_max_radius
+
+    new_hough_circle_max_radius =
+      if hough_circle_max_radius == 0 do
+        0
+      else
+        hough_circle_max_radius - 5
+      end
+
+    {:noreply, assign(socket, :hough_circle_max_radius, new_hough_circle_max_radius)}
+  end
+
+  def handle_event("inc_hough_circle_param1", _, socket) do
+    hough_circle_param1 = socket.assigns.hough_circle_param1
+    {:noreply, assign(socket, :hough_circle_param1, hough_circle_param1 + 10)}
+  end
+
+  @impl true
+  def handle_event("dec_hough_circle_param1", _, socket) do
+    hough_circle_param1 = socket.assigns.hough_circle_param1
+
+    new_hough_circle_param1 =
+      if hough_circle_param1 == 0 do
+        0
+      else
+        hough_circle_param1 - 10
+      end
+
+    {:noreply, assign(socket, :hough_circle_param1, new_hough_circle_param1)}
+  end
+
+  def handle_event("inc_hough_circle_param2", _, socket) do
+    hough_circle_param2 = socket.assigns.hough_circle_param2
+    {:noreply, assign(socket, :hough_circle_param2, hough_circle_param2 + 2)}
+  end
+
+  @impl true
+  def handle_event("dec_hough_circle_param2", _, socket) do
+    hough_circle_param2 = socket.assigns.hough_circle_param2
+
+    new_hough_circle_param2 =
+      if hough_circle_param2 == 0 do
+        0
+      else
+        hough_circle_param2 - 2
+      end
+
+    {:noreply, assign(socket, :hough_circle_param2, new_hough_circle_param2)}
+  end
+
   @impl true
   def handle_event("run_hough", _, socket) do
     Gallery.run_hough_algorithm(socket.assigns.image, %{
@@ -167,7 +280,13 @@ defmodule OdWeb.ImageLive.Show do
       canny_upper: socket.assigns.canny_upper,
       hough_line_length: socket.assigns.hough_line_length,
       hough_line_treshold: socket.assigns.hough_line_treshold,
-      hough_line_gap: socket.assigns.hough_line_gap
+      hough_line_gap: socket.assigns.hough_line_gap,
+      hough_circle_min_dist: socket.assigns.hough_circle_min_dist,
+      hough_circle_min_radius: socket.assigns.hough_circle_min_radius,
+      hough_circle_max_radius: socket.assigns.hough_circle_max_radius,
+      hough_circle_param1: socket.assigns.hough_circle_param1,
+      hough_circle_param2: socket.assigns.hough_circle_param2,
+      hough_mode: socket.assigns.hough_mode
     })
 
     {:noreply, socket}

@@ -13,36 +13,72 @@
 
 
   <div>
-    <h2>Hough image: <%= @image.hough_image[:file_name] %></h2>
+    <h1>Hough image: <%= @image.hough_image[:file_name] %></h1>
     <div>
       <img src="<%= Od.Image.url({@image.hough_image, @image}) %>"/>
     </div>
     <button type="button" phx-click="run_hough" phx-disable-with="running...">
       Run hough again
     </button>
-    <h3> Actual blur strength is: <%= @blur_strength %> </h3>
-    <button phx-click="dec_blur_strength"> - </button>
-    <button phx-click="inc_blur_strength"> + </button>
+    <h2> Preprocessing params: </h2>
+    <div style="padding-left: 50px">
+      <h3> Actual blur strength is: <%= @blur_strength %> </h3>
+      <button phx-click="dec_blur_strength"> - </button>
+      <button phx-click="inc_blur_strength"> + </button>
 
-    <h3> Actual canny lower is: <%= @canny_lower %> </h3>
-    <button phx-click="dec_canny_lower"> - </button>
-    <button phx-click="inc_canny_lower"> + </button>
+      <h3> Actual canny lower is: <%= @canny_lower %> </h3>
+      <button phx-click="dec_canny_lower"> - </button>
+      <button phx-click="inc_canny_lower"> + </button>
 
-    <h3> Actual canny upper is: <%= @canny_upper %> </h3>
-    <button phx-click="dec_canny_upper"> - </button>
-    <button phx-click="inc_canny_upper"> + </button>
+      <h3> Actual canny upper is: <%= @canny_upper %> </h3>
+      <button phx-click="dec_canny_upper"> - </button>
+      <button phx-click="inc_canny_upper"> + </button>
+    </div>
+    <h2> Hough Mode:  <%= @hough_mode %> </h2>
+      <button phx-click="set_hough_mode_to_lines"> Lines </button>
+      <button phx-click="set_hough_mode_to_circles"> Circles </button>
+      <button phx-click="set_hough_mode_to_lines_and_circles"> Lines and circles </button>
 
-    <h3> Actual hough line length is: <%= @hough_line_length %> </h3>
-    <button phx-click="dec_hough_line_length"> - </button>
-    <button phx-click="inc_hough_line_length"> + </button>
+    <%= if @hough_mode in ~w(lines lines_and_circles) do %>
+      <h2> Line Detection: </h2>
+      <div style="padding-left: 50px">
+        <h3> Actual hough line length is: <%= @hough_line_length %> </h3>
+        <button phx-click="dec_hough_line_length"> - </button>
+        <button phx-click="inc_hough_line_length"> + </button>
 
-    <h3> Actual hough line treshold is: <%= @hough_line_treshold %> </h3>
-    <button phx-click="dec_hough_line_treshold"> - </button>
-    <button phx-click="inc_hough_line_treshold"> + </button>
+        <h3> Actual hough line treshold is: <%= @hough_line_treshold %> </h3>
+        <button phx-click="dec_hough_line_treshold"> - </button>
+        <button phx-click="inc_hough_line_treshold"> + </button>
 
-    <h3> Actual hough line gap is: <%= @hough_line_gap %> </h3>
-    <button phx-click="dec_hough_line_gap"> - </button>
-    <button phx-click="inc_hough_line_gap"> + </button>
+        <h3> Actual hough line gap is: <%= @hough_line_gap %> </h3>
+        <button phx-click="dec_hough_line_gap"> - </button>
+        <button phx-click="inc_hough_line_gap"> + </button>
+      </div>
+    <% end %>
+    <%= if @hough_mode in ~w(circles lines_and_circles) do %>
+      <h2> Circle Detection: </h2>
+      <div style="padding-left: 50px">
+        <h3> Actual hough circle min dist is: <%= @hough_circle_min_dist %> </h3>
+        <button phx-click="dec_hough_circle_min_dist"> - </button>
+        <button phx-click="inc_hough_circle_min_dist"> + </button>
+
+        <h3> Actual hough circle min radius is: <%= @hough_circle_min_radius %> </h3>
+        <button phx-click="dec_hough_circle_min_radius"> - </button>
+        <button phx-click="inc_hough_circle_min_radius"> + </button>
+
+        <h3> Actual hough circle max radius is: <%= @hough_circle_max_radius %> </h3>
+        <button phx-click="dec_hough_circle_max_radius"> - </button>
+        <button phx-click="inc_hough_circle_max_radius"> + </button>
+
+        <h3> Actual hough circle param1 is: <%= @hough_circle_param1 %> </h3>
+        <button phx-click="dec_hough_circle_param1"> - </button>
+        <button phx-click="inc_hough_circle_param1"> + </button>
+
+        <h3> Actual hough circle param2 is: <%= @hough_circle_param2 %> </h3>
+        <button phx-click="dec_hough_circle_param2"> - </button>
+        <button phx-click="inc_hough_circle_param2"> + </button>
+      </div>
+    <% end %>
   </div>
 
 

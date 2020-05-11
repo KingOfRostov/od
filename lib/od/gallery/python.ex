@@ -5,7 +5,13 @@ defmodule Od.Gallery.Python do
         blur_strength: blur_strength,
         hough_line_length: hough_line_length,
         hough_line_treshold: hough_line_treshold,
-        hough_line_gap: hough_line_gap
+        hough_line_gap: hough_line_gap,
+        hough_circle_min_dist: hough_circle_min_dist,
+        hough_circle_min_radius: hough_circle_min_radius,
+        hough_circle_max_radius: hough_circle_max_radius,
+        hough_circle_param1: hough_circle_param1,
+        hough_circle_param2: hough_circle_param2,
+        hough_mode: hough_mode
       }) do
     new_image_path =
       cond do
@@ -24,9 +30,13 @@ defmodule Od.Gallery.Python do
         hough_line_treshold
       } --hough_line_length #{hough_line_length} --canny_upper #{canny_upper} --canny_lower #{
         canny_lower
-      } --blur_strength #{blur_strength} --new_image_path '#{new_image_path}' --image_path '#{
+      } --blur_strength #{blur_strength} --hough_circle_min_dist #{hough_circle_min_dist} --hough_circle_param1 #{
+        hough_circle_param1
+      } --hough_circle_param2 #{hough_circle_param2} --hough_circle_min_radius #{
+        hough_circle_min_radius
+      } --hough_circle_max_radius #{hough_circle_max_radius} --new_image_path '#{new_image_path}' --image_path '#{
         image_path
-      }' --method 'hough')
+      }' --hough_mode '#{hough_mode}' --method 'hough')
 
     command |> String.to_charlist() |> :os.cmd() |> to_string() |> String.trim()
   end

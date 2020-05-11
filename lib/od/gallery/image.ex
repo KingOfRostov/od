@@ -40,7 +40,13 @@ defmodule Od.Gallery.Image do
         hough_line_length: 15,
         hough_line_treshold: 20,
         blur_strength: 9,
-        hough_line_gap: 5
+        hough_line_gap: 5,
+        hough_circle_min_dist: 50,
+        hough_circle_min_radius: 10,
+        hough_circle_max_radius: 50,
+        hough_circle_param1: 500,
+        hough_circle_param2: 20,
+        hough_mode: "lines"
       })
     end)
 
