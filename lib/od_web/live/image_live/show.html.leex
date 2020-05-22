@@ -20,9 +20,24 @@
           <img src="<%= Od.Image.url({@image.hough_transform.result, @image}) %>" style="max-height: 100rem;" />
         </div>
         <div class="ml-5 mt-5">
-          <svg width="20" height="20">
-            <rect width="20" height="20" style="fill:rgb(255,0,255);stroke-width:3;stroke:rgb(0,0,0)" />
-          </svg>
+          <% pink_margin = active_color_button_class(@image.hough_transform, :hough_line_color, ~s(255 0 255)) %>
+          <button class="btn btn-lg btn-outline-primary mx-1 <%= pink_margin %>" phx-click="set_hough_line_color_to_pink">
+            <svg width="20" height="20">
+              <rect width="20" height="20" style="fill:rgb(255,0,255);stroke-width:3;stroke:rgb(0,0,0)" />
+            </svg>
+          </button>
+          <% red_margin = active_color_button_class(@image.hough_transform, :hough_line_color, ~s(255 0 0)) %>
+          <button class="btn btn-lg btn-outline-primary mx-1 <%= red_margin %>" phx-click="set_hough_line_color_to_red">
+            <svg width="20" height="20">
+              <rect width="20" height="20" style="fill:rgb(255,0,0);stroke-width:3;stroke:rgb(0,0,0)" />
+            </svg>
+          </button>
+          <% black_margin = active_color_button_class(@image.hough_transform, :hough_line_color, ~s(0 0 0)) %>
+          <button class="btn btn-lg btn-outline-primary mx-1 <%= black_margin %>" phx-click="set_hough_line_color_to_black">
+            <svg width="20" height="20">
+              <rect width="20" height="20" style="fill:rgb(0,0,0);stroke-width:3;stroke:rgb(0,0,0)" />
+            </svg>
+          </button>
           <button class="btn btn-lg btn-outline-primary " type="button" phx-click="run_hough" phx-disable-with="running...">
             Run hough again
           </button>
@@ -106,13 +121,39 @@
 
 
   <div>
-    <h2>Haar image: <%= @image.haar_image[:file_name] %></h2>
-    <div>
-      <img src="<%= Od.Image.url({@image.haar_image, @image}) %>"/>
+    <h1 class="text-center my-5">Haar image:</h1>
+    <div class="d-flex justify-content-center">
+      <%= if @image.haar_cascade do %>
+        <div>
+          <img src="<%= Od.Image.url({@image.haar_cascade.result, @image}) %>" style="max-height: 100rem;" />
+        </div>
+        <div class="ml-5 mt-5">
+          <svg width="20" height="20">
+            <rect width="20" height="20" style="fill:rgb(255,0,255);stroke-width:3;stroke:rgb(0,0,0)" />
+          </svg>
+          <button class="btn btn-lg btn-outline-primary " type="button" phx-click="run_haar" phx-disable-with="running...">
+            Run haar again
+          </button>
+          <h1 class="my-5 text-uppercase"> Preprocessing params: </h1>
+          <div style="padding-left: 50px">
+            <div class="mt-3">
+              <span class="h2"> Actual min neighbors is: <span class="font-weight-bold font-italic h1"> <%= @image.haar_cascade.min_neighbors %> </span> </span>
+              <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_haar_min_neighbors"> - </button>
+              <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_haar_min_neighbors"> + </button>
+            </div>
+            <div class="mt-3">
+              <span class="h2"> Actual scale factor is: <span class="font-weight-bold font-italic h1"> <%= @image.haar_cascade.scale_factor %> </span> </span>
+              <button class="btn btn-lg btn-outline-primary mx-1" phx-click="dec_haar_scale_factor"> - </button>
+              <button class="btn btn-lg btn-outline-primary mx-1" phx-click="inc_haar_scale_factor"> + </button>
+            </div>
+          </div>
+          <h1 class="my-5 text-uppercase"> Haar object type:  <u><span class="font-weight-bold font-italic text-capitalize"> <%= String.replace(@image.haar_cascade.object_type, "_", " ") %> </span></u> </h1>
+            <button class="btn btn-lg btn-outline-primary m-1" phx-click="set_haar_object_type_to_cars"> Cars </button>
+            <button class="btn btn-lg btn-outline-primary m-1" phx-click="set_haar_object_type_to_airplanes"> Airplanes </button>
+            <button class="btn btn-lg btn-outline-primary m-1" phx-click="set_haar_object_type_to_trains"> Trains </button>
+        </div>
+      <% end %>
     </div>
-    <button type="button" phx-click="run_haar" phx-disable-with="running...">
-      Run haar again
-    </button>
   </div>
 
   <div>

@@ -39,8 +39,10 @@
         </td>
         <td>
           <div>
-            <%= image.haar_image[:file_name] %>
-            <img src="<%= Od.Image.url({image.haar_image, image}, :thumb) %>"/>
+            <%= if image.haar_cascade do %>
+              <%= image.haar_cascade.result[:file_name] %>
+              <img src="<%= Od.Image.url({image.haar_cascade.result, image}, :thumb) %>"/>
+            <% end %>
           </div>
         </td>
         <td>

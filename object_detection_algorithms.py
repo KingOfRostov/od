@@ -62,6 +62,7 @@ def save_image(image, image_path, method):
 
 @timeit
 def find_objects_by_edges(image_path, new_image_path, params):
+    hough_line_color = params["hough_line_color"]
     hough_mode = params["hough_mode"]
     blur_strength = params["blur_strength"]
     canny_lower = params["canny_lower"]
@@ -79,9 +80,12 @@ def find_objects_by_edges(image_path, new_image_path, params):
     edges = cv2.Canny(blur, canny_lower, canny_upper, apertureSize=3)
     if hough_mode == "lines":
       lines = probabilistic_hough_line(edges, threshold=hough_line_treshold, line_length=hough_line_length, line_gap=hough_line_gap)
+      line_r = int(hough_line_color[0])
+      line_g = int(hough_line_color[1])
+      line_b = int(hough_line_color[2])
       for line in lines:
           p0, p1 = line
-          cv2.line(img,(p0[0], p0[1]),(p1[0], p1[1]),(255, 0, 255), 2)
+          cv2.line(img,(p0[0], p0[1]),(p1[0], p1[1]),(line_r, line_g, line_b), 2)
     elif hough_mode == "circles":
       circles = cv2.HoughCircles(edges,cv2.HOUGH_GRADIENT,1,hough_circle_min_dist, param1=hough_circle_param1,param2=hough_circle_param2,minRadius=hough_circle_min_radius,maxRadius=hough_circle_max_radius)
       if circles is not None:
@@ -96,7 +100,7 @@ def find_objects_by_edges(image_path, new_image_path, params):
       for line in lines:
           p0, p1 = line
           cv2.line(img,(p0[0], p0[1]),(p1[0], p1[1]),(255, 0, 255), 2)
-      circles = cv2.HoughCircles(edges,cv2.HOUGH_GRADIENT,1,50, param1=hough_circle_param1,param2=hough_circle_param2,minRadius=hough_circle_min_radius,maxRadius=hough_circle_max_radius)
+      circles = cv2.HoughCircles(edges,cv2.HOUGH_GRADIENT,1,hough_circle_min_dist, param1=hough_circle_param1,param2=hough_circle_param2,minRadius=hough_circle_min_radius,maxRadius=hough_circle_max_radius)
       if circles is not None:
           circles = np.uint16(np.around(circles))
           for i in circles[0,:]:
@@ -113,22 +117,21 @@ def find_objects_by_edges(image_path, new_image_path, params):
 
 
 @timeit
-def find_objects_viola_jones(image_path, new_image_path, object_type):
+def find_objects_viola_jones(image_path, new_image_path, params):
+    object_type = params["object_type"]
+    min_neighbors = params["min_neighbors"]
+    scale_factor = params["scale_factor"]
     if object_type in ["cars", "airplanes", "trains"]:
         img = imread(image_path)
-        # height = img.shape[0]
-        # weight = img.shape[1]
-        # img = cv2.resize(img, (300, 300), interpolation=cv2.INTER_AREA)
         haar_cascade_src = f'/home/sergey/Рабочий стол/sfedu/images/haar_cascades/{object_type}.xml'
         haar_cascade = cv2.CascadeClassifier(haar_cascade_src)
         if len(img.shape) == 3:
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         else:
             gray = img
-        cars = haar_cascade.detectMultiScale(gray, 1.1, 1)
+        cars = haar_cascade.detectMultiScale(gray, scale_factor, min_neighbors)
         for (x, y, w, h) in cars:
             cv2.rectangle(img, (x,y), (x+w, y+h), (0, 0, 255), 2)
-        # img = cv2.resize(img, (weight, height), interpolation=cv2.INTER_CUBIC)
         # display(Image.fromarray(img))
         save_image(img, new_image_path, "haar")
 
@@ -260,10 +263,13 @@ parser.add_argument('--hough_circle_max_radius', type=int, default=50)
 parser.add_argument('--hough_circle_param1', type=int, default=500)
 parser.add_argument('--hough_circle_param2', type=int, default=20)
 parser.add_argument('--hough_mode', type=str, default="lines")
+parser.add_argument('--hough_line_color', nargs='+', default=[255, 0, 255])
 parser.add_argument('--image_path', help="Do image_path option", type=str)
 parser.add_argument('--new_image_path', help="Do new_image_path option" ,type=str)
 parser.add_argument('--method',  type=str, default="hough")
-parser.add_argument('--cascade', type=str, default="cars")
+parser.add_argument('--object_type', type=str, default="cars")
+parser.add_argument('--scale_factor', type=float, default=1.05)
+parser.add_argument('--min_neighbors', type=int, default=1)
 args=parser.parse_args()
 
 method =  args.method
@@ -283,14 +289,18 @@ if method == "hough":
   hough_circle_param2 = args.hough_circle_param2
   hough_circle_min_dist = args.hough_circle_min_dist
   hough_mode = args.hough_mode
-  params = {"hough_mode": hough_mode,"hough_circle_min_dist": hough_circle_min_dist, "hough_circle_param2": hough_circle_param2,"hough_circle_param1": hough_circle_param1, "hough_circle_max_radius": hough_circle_max_radius, "hough_circle_min_radius": hough_circle_min_radius, "blur_strength": blur_strength, "canny_lower": canny_lower, "hough_line_gap": hough_line_gap, "hough_line_treshold": hough_line_treshold, "hough_line_length": hough_line_length, "canny_upper": canny_upper}
+  hough_line_color = args.hough_line_color
+  params = {"hough_line_color": hough_line_color, "hough_mode": hough_mode,"hough_circle_min_dist": hough_circle_min_dist, "hough_circle_param2": hough_circle_param2,"hough_circle_param1": hough_circle_param1, "hough_circle_max_radius": hough_circle_max_radius, "hough_circle_min_radius": hough_circle_min_radius, "blur_strength": blur_strength, "canny_lower": canny_lower, "hough_line_gap": hough_line_gap, "hough_line_treshold": hough_line_treshold, "hough_line_length": hough_line_length, "canny_upper": canny_upper}
   find_objects_by_edges(image_path, new_image_path, params)
   print(new_image_path)
 elif method == "haar":
   image_path = args.image_path
   new_image_path = args.new_image_path
-  cascade = args.cascade
-  find_objects_viola_jones(image_path, new_image_path, cascade)
+  object_type = args.object_type
+  scale_factor = args.scale_factor
+  min_neighbors = args.min_neighbors
+  params = {"object_type": object_type, "scale_factor": scale_factor, "min_neighbors": min_neighbors}
+  find_objects_viola_jones(image_path, new_image_path, params)
   print(new_image_path)
 elif method == "tensorflow":
   image_path = args.image_path

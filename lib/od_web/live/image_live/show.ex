@@ -19,6 +19,8 @@ defmodule OdWeb.ImageLive.Show do
      |> assign(:image, image)}
   end
 
+  # HOUGH
+  ################################# 3
   @impl true
   def handle_event("inc_hough_line_gap", _, socket) do
     image = socket.assigns.image
@@ -229,6 +231,39 @@ defmodule OdWeb.ImageLive.Show do
     {:noreply, socket}
   end
 
+  def handle_event("set_hough_line_color_to_pink", _, socket) do
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, hough_line_color: "255 0 255"}
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_event("set_hough_line_color_to_black", _, socket) do
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, hough_line_color: "0 0 0"}
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_event("set_hough_line_color_to_red", _, socket) do
+    image = socket.assigns.image
+    hough_transform = image.hough_transform
+
+    Gallery.update_image(image, %{
+      hough_transform: %{id: hough_transform.id, hough_line_color: "255 0 0"}
+    })
+
+    {:noreply, socket}
+  end
+
   def handle_event("set_hough_mode_to_lines", _, socket) do
     image = socket.assigns.image
     hough_transform = image.hough_transform
@@ -430,6 +465,7 @@ defmodule OdWeb.ImageLive.Show do
       blur_strength: hough_transform.blur_strength,
       canny_lower: hough_transform.canny_lower,
       canny_upper: hough_transform.canny_upper,
+      hough_line_color: hough_transform.hough_line_color,
       line_length: hough_transform.line_length,
       line_treshold: hough_transform.line_treshold,
       line_gap: hough_transform.line_gap,
@@ -444,12 +480,120 @@ defmodule OdWeb.ImageLive.Show do
     {:noreply, socket}
   end
 
+  # HAAR
+  ############################################
   @impl true
   def handle_event("run_haar", _, socket) do
-    Gallery.run_haar_algorithm(socket.assigns.image)
+    haar_cascade = socket.assigns.image.haar_cascade
+
+    Gallery.run_haar_algorithm(socket.assigns.image, %{
+      object_type: haar_cascade.object_type,
+      min_neighbors: haar_cascade.min_neighbors,
+      scale_factor: haar_cascade.scale_factor
+    })
+
     {:noreply, socket}
   end
 
+  def handle_event("set_haar_object_type_to_cars", _, socket) do
+    image = socket.assigns.image
+    haar_cascade = image.haar_cascade
+
+    Gallery.update_image(image, %{
+      haar_cascade: %{id: haar_cascade.id, object_type: "cars"}
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_event("set_haar_object_type_to_airplanes", _, socket) do
+    image = socket.assigns.image
+    haar_cascade = image.haar_cascade
+
+    Gallery.update_image(image, %{
+      haar_cascade: %{id: haar_cascade.id, object_type: "airplanes"}
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_event("set_haar_object_type_to_trains", _, socket) do
+    image = socket.assigns.image
+    haar_cascade = image.haar_cascade
+
+    Gallery.update_image(image, %{
+      haar_cascade: %{id: haar_cascade.id, object_type: "trains"}
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_event("inc_haar_min_neighbors", _, socket) do
+    image = socket.assigns.image
+    haar_cascade = image.haar_cascade
+    min_neighbors = haar_cascade.min_neighbors
+
+    Gallery.update_image(image, %{
+      haar_cascade: %{id: haar_cascade.id, min_neighbors: min_neighbors + 1}
+    })
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("dec_haar_min_neighbors", _, socket) do
+    image = socket.assigns.image
+    haar_cascade = image.haar_cascade
+    min_neighbors = haar_cascade.min_neighbors
+
+    new_min_neighbors =
+      if min_neighbors == 1 do
+        1
+      else
+        min_neighbors - 1
+      end
+
+    Gallery.update_image(image, %{
+      haar_cascade: %{id: haar_cascade.id, min_neighbors: new_min_neighbors}
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_event("inc_haar_scale_factor", _, socket) do
+    image = socket.assigns.image
+    haar_cascade = image.haar_cascade
+    scale_factor = haar_cascade.scale_factor
+
+    Gallery.update_image(image, %{
+      haar_cascade: %{id: haar_cascade.id, scale_factor: Float.round(scale_factor + 0.05, 2)}
+    })
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("dec_haar_scale_factor", _, socket) do
+    image = socket.assigns.image
+    haar_cascade = image.haar_cascade
+    scale_factor = haar_cascade.scale_factor
+
+    new_scale_factor =
+      if scale_factor == 1.05 do
+        Float.round(1.05, 2)
+      else
+        Float.round(scale_factor - 0.05, 2)
+      end
+
+    Gallery.update_image(image, %{
+      haar_cascade: %{id: haar_cascade.id, scale_factor: new_scale_factor}
+    })
+
+    {:noreply, socket}
+  end
+
+  # TENSORFLOW
+  #############################################
   @impl true
   def handle_event("run_tensorflow", _, socket) do
     Gallery.run_tensorflow_algorithm(socket.assigns.image)
@@ -471,5 +615,13 @@ defmodule OdWeb.ImageLive.Show do
     {:noreply, update(socket, :image, fn _ -> image end)}
   end
 
+  ### PUBLIC
+  def active_color_button_class(image, field, color) do
+    if Map.get(image, field) == color do
+      "mb-5"
+    end
+  end
+
+  ### PRIVATE
   defp page_title(:show), do: "Show Image"
 end

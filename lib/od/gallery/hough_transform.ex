@@ -5,11 +5,14 @@ defmodule Od.Gallery.HoughTransform do
   alias Od.Gallery
   alias Od.Helpers.ImageToBinaryConverter
   @required ~w(result image_id)a
-  @optional ~w(uuid blur_strength canny_lower canny_upper line_gap line_length line_treshold circle_min_dist circle_min_radius circle_max_radius circle_param1 circle_param2 mode)a
+  @optional ~w(uuid blur_strength canny_lower canny_upper hough_line_color line_gap line_length line_treshold circle_min_dist circle_min_radius circle_max_radius circle_param1 circle_param2 mode)a
   @attachments_atoms ~w(result)a
   @attachments_strings ~w(result)
 
   @defaults %{
+    hough_line_color: "255 0 255",
+    hough_circle_color: "255 0 255",
+    hough_circle_center_color: "255 0 255",
     blur_strength: 9,
     canny_lower: 150,
     canny_upper: 150,
@@ -37,6 +40,9 @@ defmodule Od.Gallery.HoughTransform do
     field :circle_max_radius, :integer, default: @defaults.circle_max_radius
     field :circle_param1, :integer, default: @defaults.circle_param1
     field :circle_param2, :integer, default: @defaults.circle_param2
+    field :hough_line_color, :string, default: @defaults.hough_line_color
+    field :hough_circle_color, :string, default: @defaults.hough_circle_color
+    field :hough_circle_center_color, :string, default: @defaults.hough_circle_center_color
     field :mode, :string, default: @defaults.mode
     field :uuid, :string
 

@@ -6,14 +6,14 @@ defmodule Od.Gallery.Image do
   alias Od.Gallery.Python
   alias Od.Helpers.ImageToBinaryConverter
   alias Od.Repo
-  @preload_list ~w(hough_transform)a
+  @preload_list ~w(hough_transform haar_cascade)a
   @required ~w(image)a
   @optional ~w(uuid)a
-  @attachments_atoms ~w(image haar_image tensorflow_image)a
-  @attachments_strings ~w(image haar_image tensorflow_image)
+  @attachments_atoms ~w(image tensorflow_image)a
+  @attachments_strings ~w(image tensorflow_image)
   schema "images" do
-    field :haar_image, Od.Image.Type
     has_one :hough_transform, Gallery.HoughTransform, on_replace: :delete, on_delete: :delete_all
+    has_one :haar_cascade, Gallery.HaarCascade, on_replace: :delete, on_delete: :delete_all
     field :image, Od.Image.Type
     field :tensorflow_image, Od.Image.Type
     field :uuid, :string
@@ -29,6 +29,7 @@ defmodule Od.Gallery.Image do
     |> cast(attrs, @required ++ @optional)
     |> cast_attachments(attrs, @attachments_atoms)
     |> cast_assoc(:hough_transform)
+    |> cast_assoc(:haar_cascade)
     |> validate_required(@required)
   end
 
@@ -43,6 +44,7 @@ defmodule Od.Gallery.Image do
         blur_strength: hough_defaults.blur_strength,
         canny_lower: hough_defaults.canny_lower,
         canny_upper: hough_defaults.canny_upper,
+        hough_line_color: hough_defaults.hough_line_color,
         line_length: hough_defaults.line_length,
         line_treshold: hough_defaults.line_treshold,
         line_gap: hough_defaults.line_gap,
@@ -55,20 +57,29 @@ defmodule Od.Gallery.Image do
       })
     end)
 
-    # Task.start(fn -> run_haar(image, cwd, filename) end)
+    Task.start(fn ->
+      haar_defaults = Gallery.HaarCascade.defaults()
+
+      run_haar(image, cwd, filename, %{
+        scale_factor: haar_defaults.scale_factor,
+        min_neighbors: haar_defaults.min_neighbors,
+        object_type: haar_defaults.object_type
+      })
+    end)
+
     # Task.start(fn -> run_tensorflow(image, cwd, filename) end)
   end
 
-  def run_hough_algorithm(image, param) do
+  def run_hough_algorithm(image, params) do
     %{filename: filename, cwd: cwd} = get_filename_and_cwd(image)
 
-    run_hough(image, cwd, filename, param)
+    run_hough(image, cwd, filename, params)
   end
 
-  def run_haar_algorithm(image) do
+  def run_haar_algorithm(image, params) do
     %{filename: filename, cwd: cwd} = get_filename_and_cwd(image)
 
-    run_haar(image, cwd, filename)
+    run_haar(image, cwd, filename, params)
   end
 
   def run_tensorflow_algorithm(image) do
@@ -93,16 +104,26 @@ defmodule Od.Gallery.Image do
     |> delete_python_image(tensorflow_image_path)
   end
 
-  def run_haar(_image, _cwd, nil), do: nil
+  def run_haar(_image, _cwd, nil, _), do: nil
 
-  def run_haar(image, cwd, filename) do
-    haar_image_path = Python.run_haar(cwd <> filename)
+  def run_haar(image, cwd, filename, params) do
+    haar_image_path = Python.run_haar(cwd <> filename, params)
     filename = haar_image_path |> String.split("/") |> List.last()
 
+    update_params = %{
+      haar_cascade:
+        Map.merge(params, %{
+          result: %Plug.Upload{
+            filename: filename,
+            path: Path.expand(haar_image_path)
+          },
+          image_id: image.id
+        })
+    }
+
     image
-    |> Gallery.update_image(%{
-      "haar_image" => %Plug.Upload{filename: filename, path: Path.expand(haar_image_path)}
-    })
+    |> Repo.preload(preload_list())
+    |> Gallery.update_image(update_params)
     |> delete_python_image(haar_image_path)
   end
 

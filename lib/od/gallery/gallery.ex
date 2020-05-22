@@ -91,9 +91,9 @@ defmodule Od.Gallery do
   """
   def delete_image(%Image{} = image) do
     delete_arc_image(image.image)
-    delete_arc_image(image.haar_image)
     delete_arc_image(image.tensorflow_image)
     delete_arc_inner_image(image.hough_transform)
+    delete_arc_inner_image(image.haar_cascade)
 
     image
     |> Repo.delete()
@@ -123,8 +123,8 @@ defmodule Od.Gallery do
     Image.run_hough_algorithm(image, param)
   end
 
-  def run_haar_algorithm(image) do
-    Image.run_haar_algorithm(image)
+  def run_haar_algorithm(image, params) do
+    Image.run_haar_algorithm(image, params)
   end
 
   def run_tensorflow_algorithm(image) do
