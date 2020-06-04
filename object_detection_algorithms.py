@@ -156,7 +156,7 @@ def load_model(model_name):
   return model
 
 @timeit
-def find_objects_tensorflow(image_path, new_image_path):
+def find_objects_tensorflow(image_path, new_image_path, params):
     # patch tf1 into `utils.ops`
     utils_ops.tf = tf.compat.v1
 
@@ -168,12 +168,15 @@ def find_objects_tensorflow(image_path, new_image_path):
         os.chdir('..')
     elif not pathlib.Path('models').exists():
       os.system('git clone --depth 1 https://github.com/tensorflow/models')
-    model_name = "mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28"
-    masking_model = load_model(model_name)
-    show_inference(masking_model, image_path, new_image_path)
+    # model_name = "mask_rcnn_inception_resnet_v2_atrous_coco_2018_01_28"
+    # masking_model = load_model(model_name)
+    model_name = 'ssd_mobilenet_v1_coco_2017_11_17'
+    detection_model = load_model(model_name)
+    # show_inference(masking_model, image_path, new_image_path, params)
+    show_inference(detection_model, image_path, new_image_path, params)
 
 
-def show_inference(model, image_path, new_image_path):
+def show_inference(model, image_path, new_image_path, params):
   image = imread(image_path)
   # the array based representation of the image will be used later in order to prepare the
   # result image with boxes and labels on it.
@@ -183,8 +186,19 @@ def show_inference(model, image_path, new_image_path):
   category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS, use_display_name=True)
   image_np = np.array(image)
   # Actual detection.
-  output_dict = run_inference_for_single_image(model, image_np)
+  old_output_dict = run_inference_for_single_image(model, image_np)
   # Visualization of the results of a detection.
+  output_dict = {'detection_classes': [], 'detection_scores': [], 'detection_boxes': [], 'num_detections': 0}
+  wanted_objects = params['wanted_objects']
+  for i in range(len(old_output_dict['detection_classes'])):
+    if category_index[old_output_dict['detection_classes'][i]]['name'] in wanted_objects:
+      output_dict['detection_classes'].append(old_output_dict['detection_classes'][i])
+      output_dict['detection_scores'].append(old_output_dict['detection_scores'][i])
+      output_dict['detection_boxes'].append(old_output_dict['detection_boxes'][i])
+      output_dict['num_detections']+=1
+  output_dict['detection_classes'] = np.array(output_dict['detection_classes'])
+  output_dict['detection_boxes'] = np.array(output_dict['detection_boxes'])
+  output_dict['detection_scores'] = np.array(output_dict['detection_scores'])
   vis_util.visualize_boxes_and_labels_on_image_array(
       image_np,
       output_dict['detection_boxes'],
@@ -270,6 +284,7 @@ parser.add_argument('--method',  type=str, default="hough")
 parser.add_argument('--object_type', type=str, default="cars")
 parser.add_argument('--scale_factor', type=float, default=1.05)
 parser.add_argument('--min_neighbors', type=int, default=1)
+parser.add_argument('--wanted_objects', nargs='+', default=['car', 'airplane', 'cell phone', 'bicycle', 'motorcycle', 'train', 'bus', 'truck', 'boat', 'traffic light', 'laptop', 'mouse'])
 args=parser.parse_args()
 
 method =  args.method
@@ -305,7 +320,9 @@ elif method == "haar":
 elif method == "tensorflow":
   image_path = args.image_path
   new_image_path = args.new_image_path
-  find_objects_tensorflow(image_path, new_image_path)
+  wanted_objects = args.wanted_objects
+  params = {"wanted_objects": wanted_objects}
+  find_objects_tensorflow(image_path, new_image_path, params)
   print(new_image_path)
 
 

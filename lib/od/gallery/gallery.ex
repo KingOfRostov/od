@@ -127,8 +127,8 @@ defmodule Od.Gallery do
     Image.run_haar_algorithm(image, params)
   end
 
-  def run_tensorflow_algorithm(image) do
-    Image.run_tensorflow_algorithm(image)
+  def run_tensorflow_algorithm(image, params) do
+    Image.run_tensorflow_algorithm(image, params)
   end
 
   def run_all_algorithms(image) do

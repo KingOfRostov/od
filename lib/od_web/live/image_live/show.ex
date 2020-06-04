@@ -594,9 +594,57 @@ defmodule OdWeb.ImageLive.Show do
 
   # TENSORFLOW
   #############################################
+
+  def handle_event("add_object_to_wanted_objects", %{"object" => object}, socket) do
+    image = socket.assigns.image
+    tensorflow = image.tensorflow
+
+    wanted_objects =
+      tensorflow.wanted_objects
+      |> String.split()
+      |> Enum.concat([object])
+      |> Enum.uniq()
+      |> Enum.join(" ")
+
+    Gallery.update_image(image, %{
+      tensorflow: %{
+        id: tensorflow.id,
+        wanted_objects: wanted_objects
+      }
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_event("remove_object_from_wanted_objects", %{"object" => object}, socket) do
+    image = socket.assigns.image
+    tensorflow = image.tensorflow
+
+    wanted_objects =
+      tensorflow.wanted_objects
+      |> String.split()
+      |> List.delete(object)
+      |> Enum.uniq()
+      |> Enum.join(" ")
+
+    Gallery.update_image(image, %{
+      tensorflow: %{
+        id: tensorflow.id,
+        wanted_objects: wanted_objects
+      }
+    })
+
+    {:noreply, socket}
+  end
+
   @impl true
   def handle_event("run_tensorflow", _, socket) do
-    Gallery.run_tensorflow_algorithm(socket.assigns.image)
+    tensorflow = socket.assigns.image.tensorflow
+
+    Gallery.run_tensorflow_algorithm(socket.assigns.image, %{
+      wanted_objects: tensorflow.wanted_objects
+    })
+
     {:noreply, socket}
   end
 

@@ -72,7 +72,9 @@ defmodule Od.Gallery.Python do
     command |> String.to_charlist() |> :os.cmd() |> to_string() |> String.trim()
   end
 
-  def run_tensorflow(image_path) do
+  def run_tensorflow(image_path, %{wanted_objects: wanted_objects}) do
+    wanted_objects = String.trim(wanted_objects)
+
     new_image_path =
       cond do
         String.ends_with?(image_path, ".jpg") ->
@@ -86,9 +88,9 @@ defmodule Od.Gallery.Python do
       end
 
     command =
-      ~s(python3 object_detection_algorithms.py --new_image_path '#{new_image_path}' --image_path '#{
-        image_path
-      }' --method 'tensorflow')
+      ~s(python3 object_detection_algorithms.py --wanted_objects #{wanted_objects} --new_image_path '#{
+        new_image_path
+      }' --image_path '#{image_path}' --method 'tensorflow')
 
     command
     |> String.to_charlist()

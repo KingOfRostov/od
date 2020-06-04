@@ -6,7 +6,7 @@ defmodule Od.Gallery.Image do
   alias Od.Gallery.Python
   alias Od.Helpers.ImageToBinaryConverter
   alias Od.Repo
-  @preload_list ~w(hough_transform haar_cascade)a
+  @preload_list ~w(hough_transform haar_cascade tensorflow)a
   @required ~w(image)a
   @optional ~w(uuid)a
   @attachments_atoms ~w(image tensorflow_image)a
@@ -14,6 +14,7 @@ defmodule Od.Gallery.Image do
   schema "images" do
     has_one :hough_transform, Gallery.HoughTransform, on_replace: :delete, on_delete: :delete_all
     has_one :haar_cascade, Gallery.HaarCascade, on_replace: :delete, on_delete: :delete_all
+    has_one :tensorflow, Gallery.Tensorflow, on_replace: :delete, on_delete: :delete_all
     field :image, Od.Image.Type
     field :tensorflow_image, Od.Image.Type
     field :uuid, :string
@@ -30,6 +31,7 @@ defmodule Od.Gallery.Image do
     |> cast_attachments(attrs, @attachments_atoms)
     |> cast_assoc(:hough_transform)
     |> cast_assoc(:haar_cascade)
+    |> cast_assoc(:tensorflow)
     |> validate_required(@required)
   end
 
@@ -67,7 +69,10 @@ defmodule Od.Gallery.Image do
       })
     end)
 
-    # Task.start(fn -> run_tensorflow(image, cwd, filename) end)
+    Task.start(fn ->
+      tensorflow_defaults = Gallery.Tensorflow.defaults()
+      run_tensorflow(image, cwd, filename, %{wanted_objects: tensorflow_defaults.wanted_objects})
+    end)
   end
 
   def run_hough_algorithm(image, params) do
@@ -82,25 +87,32 @@ defmodule Od.Gallery.Image do
     run_haar(image, cwd, filename, params)
   end
 
-  def run_tensorflow_algorithm(image) do
+  def run_tensorflow_algorithm(image, params) do
     %{filename: filename, cwd: cwd} = get_filename_and_cwd(image)
 
-    run_tensorflow(image, cwd, filename)
+    run_tensorflow(image, cwd, filename, params)
   end
 
-  def run_tensorflow(_image, _cwd, nil), do: nil
+  def run_tensorflow(_image, _cwd, nil, _), do: nil
 
-  def run_tensorflow(image, cwd, filename) do
-    tensorflow_image_path = Python.run_tensorflow(cwd <> filename)
+  def run_tensorflow(image, cwd, filename, params) do
+    tensorflow_image_path = Python.run_tensorflow(cwd <> filename, params)
     filename = tensorflow_image_path |> String.split("/") |> List.last()
 
+    update_params = %{
+      tensorflow:
+        Map.merge(params, %{
+          result: %Plug.Upload{
+            filename: filename,
+            path: Path.expand(tensorflow_image_path)
+          },
+          image_id: image.id
+        })
+    }
+
     image
-    |> Gallery.update_image(%{
-      "tensorflow_image" => %Plug.Upload{
-        filename: filename,
-        path: Path.expand(tensorflow_image_path)
-      }
-    })
+    |> Repo.preload(preload_list())
+    |> Gallery.update_image(update_params)
     |> delete_python_image(tensorflow_image_path)
   end
 

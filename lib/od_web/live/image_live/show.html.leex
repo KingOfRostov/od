@@ -1,25 +1,30 @@
-<h1>Show Image</h1>
-
-  <div>
-    <h2>Uuid: <%= @image.uuid %></h2>
+<div class="p-0">
+  <div class="my-5">
+    <h1 class="text-center my-5">Show Image:</h1>
+    <h2 class="text-center my-5">Uuid: <%= @image.uuid %></h2>
   </div>
 
-  <div>
-    <h2>Image: <%= @image.image[:file_name] %></h2>
-    <div>
-      <img src="<%= Od.Image.url({@image.image, @image}) %>"/>
+  <div class="my-5">
+    <h1 class="text-center my-5">Original image:</h1>
+    <div class="d-flex justify-content-center row">
+      <%= if @image.haar_cascade do %>
+        <div class="col-7 col-lg-7">
+          <img src="<%= Od.Image.url({@image.image, @image}) %>" style="max-height: 100rem;" />
+        </div>
+        <div class="ml-5 mt-5 col-4 col-lg-4">
+        </div>
+      <% end %>
     </div>
   </div>
 
-
   <div class="my-5">
     <h1 class="text-center my-5">Hough image:</h1>
-    <div class="d-flex justify-content-center">
+    <div class="d-flex justify-content-center row">
       <%= if @image.hough_transform do %>
-        <div>
+        <div class="col-7 col-lg-7">
           <img src="<%= Od.Image.url({@image.hough_transform.result, @image}) %>" style="max-height: 100rem;" />
         </div>
-        <div class="ml-5 mt-5">
+        <div class="ml-5 mt-5 col-4 col-lg-4">
           <% pink_margin = active_color_button_class(@image.hough_transform, :hough_line_color, ~s(255 0 255)) %>
           <button class="btn btn-lg btn-outline-primary mx-1 <%= pink_margin %>" phx-click="set_hough_line_color_to_pink">
             <svg width="20" height="20">
@@ -38,7 +43,7 @@
               <rect width="20" height="20" style="fill:rgb(0,0,0);stroke-width:3;stroke:rgb(0,0,0)" />
             </svg>
           </button>
-          <button class="btn btn-lg btn-outline-primary " type="button" phx-click="run_hough" phx-disable-with="running...">
+          <button class="btn btn-lg btn-outline-primary" type="button" phx-click="run_hough" phx-disable-with="running...">
             Run hough again
           </button>
           <h1 class="my-5 text-uppercase"> Preprocessing params: </h1>
@@ -120,18 +125,15 @@
   </div>
 
 
-  <div>
+  <div class="my-5">
     <h1 class="text-center my-5">Haar image:</h1>
-    <div class="d-flex justify-content-center">
+    <div class="d-flex justify-content-center row">
       <%= if @image.haar_cascade do %>
-        <div>
+        <div class="col-7 col-lg-7">
           <img src="<%= Od.Image.url({@image.haar_cascade.result, @image}) %>" style="max-height: 100rem;" />
         </div>
-        <div class="ml-5 mt-5">
-          <svg width="20" height="20">
-            <rect width="20" height="20" style="fill:rgb(255,0,255);stroke-width:3;stroke:rgb(0,0,0)" />
-          </svg>
-          <button class="btn btn-lg btn-outline-primary " type="button" phx-click="run_haar" phx-disable-with="running...">
+        <div class="ml-5 mt-5 col-4 col-lg-4">
+          <button class="btn btn-lg btn-outline-primary" type="button" phx-click="run_haar" phx-disable-with="running...">
             Run haar again
           </button>
           <h1 class="my-5 text-uppercase"> Preprocessing params: </h1>
@@ -156,15 +158,75 @@
     </div>
   </div>
 
-  <div>
-    <h2>Tensorflow image: <%= @image.tensorflow_image[:file_name] %></h2>
-    <div>
-      <img src="<%= Od.Image.url({@image.tensorflow_image, @image}) %>"/>
+  <div class="my-5">
+    <h1 class="text-center my-5">Tensorflow image:</h1>
+    <div class="d-flex justify-content-center row">
+      <%= if @image.tensorflow do %>
+        <div class="col-7 col-lg-7">
+          <img src="<%= Od.Image.url({@image.tensorflow.result, @image}) %>" style="max-height: 100rem;" />
+        </div>
+        <div class="ml-5 mt-5 col-4 col-lg-4">
+          <button class="btn btn-lg btn-outline-primary" type="button" phx-click="run_tensorflow" phx-disable-with="running...">
+            Run tensorflow again
+          </button>
+          <div class="mt-3">
+            <p class="h2"> Actual wanted objects are: </p>
+            <div class="my-3 mx-3 d-flex">
+              <div class="my-3 mx-3">
+                <%= for wanted_object <-String.split(@image.tensorflow.wanted_objects, " ")  do%>
+                  <p class="font-weight-bold font-italic h1"> <%= wanted_object %> </p> </span>
+                <% end %>
+              </div>
+              <div class="my-3 mx-3">
+                <div class="my-3 mx-3">
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="car" phx-click="add_object_to_wanted_objects"> add car </button>
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="car" phx-click="remove_object_from_wanted_objects"> remove car </button>
+                </div>
+                <div class="my-3 mx-3">
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="airplane" phx-click="add_object_to_wanted_objects"> add airplane </button>
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="airplane" phx-click="remove_object_from_wanted_objects"> remove airplane </button>
+                </div>
+                <div class="my-3 mx-3">
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="bicycle" phx-click="add_object_to_wanted_objects"> add bicycle </button>
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="bicycle" phx-click="remove_object_from_wanted_objects"> remove bicycle </button>
+                </div>
+                <div class="my-3 mx-3">
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="motorcycle" phx-click="add_object_to_wanted_objects"> add motorcycle </button>
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="motorcycle" phx-click="remove_object_from_wanted_objects"> remove motorcycle </button>
+                </div>
+                <div class="my-3 mx-3">
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="train" phx-click="add_object_to_wanted_objects"> add train </button>
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="train" phx-click="remove_object_from_wanted_objects"> remove train </button>
+                </div>
+                <div class="my-3 mx-3">
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="truck" phx-click="add_object_to_wanted_objects"> add truck </button>
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="truck" phx-click="remove_object_from_wanted_objects"> remove truck </button>
+                </div>
+                <div class="my-3 mx-3">
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="boat" phx-click="add_object_to_wanted_objects"> add boat </button>
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="boat" phx-click="remove_object_from_wanted_objects"> remove boat </button>
+                </div>
+                <div class="my-3 mx-3">
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="mouse" phx-click="add_object_to_wanted_objects"> add mouse </button>
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="mouse" phx-click="remove_object_from_wanted_objects"> remove mouse </button>
+                </div>
+
+                <div class="my-3 mx-3">
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="bus" phx-click="add_object_to_wanted_objects"> add bus </button>
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="bus" phx-click="remove_object_from_wanted_objects"> remove bus </button>
+                </div>
+                <div class="my-3 mx-3">
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="laptop" phx-click="add_object_to_wanted_objects"> add laptop </button>
+                  <button class="btn btn-lg btn-outline-primary mx-1" phx-value-object="laptop" phx-click="remove_object_from_wanted_objects"> remove laptop </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
     </div>
-    <button type="button" phx-click="run_tensorflow" phx-disable-with="running...">
-      Run tensorflow again
-    </button>
   </div>
 
 
-<span><%= live_redirect "Back", to: Routes.image_index_path(@socket, :index) %></span>
+  <%= live_redirect "Back", style: "width: 100px;",class: "btn btn-lg btn-primary fixed-top text-white mt-2 ml-2", to: Routes.image_index_path(@socket, :index) %>
+</div>
